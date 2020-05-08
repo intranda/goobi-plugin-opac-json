@@ -1,51 +1,29 @@
 ﻿<config_plugin>
 	<config>
-		<!-- which workflow template shall be used -->
-		<template>*</template>
+	
+ <!-- Syntax: https://github.com/json-path/JsonPath#path-examples   -->
 
-		
+        <!-- check if field  /children/children/recordType with value 'item' exists -->
+        <recordType field="$.children[0].children[0][?(@.recordType=='item')]" docType="Volume" anchorType="MultiVolumeWork"/>
+        <!-- check if "recordType": "archival_object" exists -->
+        <recordType field="[?(@.['recordType']=='archival_object')]" docType="Monograph" />
 
-		<!-- which digital collection to use -->
-		<collection>example collection</collection>
-		
-		<useOpac>false</useOpac>
-		<opacName></opacName>
-		<searchField></searchField>
+<!-- default publication type if it cannot be detected. If missing or empty, no record will be created -->
+       <defaultPublicationType>Monograph</defaultPublicationType>
 
-<recordType field="children.children.recordType" expectedValue="\\w+" docType="ABC" matchType="regex"/>
-<recordType field="recordType" expectedValue="bib" docType="Monograph" matchType="exact"/>
-<recordType field="recordType" expectedValue="archival_object" docType="Archive" matchType="any"/>
-
-		<!-- define which field contains the identifier of the record -->
-		<identifierFieldName>CatalogIDDigital</identifierFieldName>
-
-        <!-- Rules to generate the process title, the same syntax as in goobi_projects.xml can be used. 
-            Use the column names to get the right metadata values. 
-            If the field is missing or empty, the value of CatalogIDDigital is used.
+        <!-- 
+        metadata : name of the field in ruleset
+        field: path to the field
+        regularExpression: regex to manipulate the value
+        docType: volume or anchor        
          -->
-        <processTitleRule>'static_prefix_'+CatalogIDDigital</processTitleRule>
+		<metadata metadata="CatalogIDDigital" field="$.identifier" regularExpression="s/\/aspace\/repositories\/11\/archival_objects\/(.+)/$1/g" docType="volume"  />			
+        <metadata metadata="TitleDocMain" field="$.title" />
+        <metadata metadata="PublicationYear" field="$.date" />
+        <metadata metadata="DocLanguage" field="$.language" />
         
-        <!-- prefix path to the image folder. Can be empty or missing if the import doesn't contain images or if the excel field contains absolute path  -->
-        <imageFolderPath></imageFolderPath>
-        <!-- define which column contains the image folder name. Can be combined with <imageFolderPath> prefix or an absolute path. 
-        If the field is missing, empty or does not contain an existing directory, no images will be imported -->
-        <imageFolderHeaderName>images</imageFolderHeaderName>
-
-        <!-- defines, if images are moved from the source folder to the destination (true) or copied (false) -->
-        <moveImages>true</moveImages>
-
-		<!-- define here which columns shall be mapped to which ugh metadata 
-			ugh: name of the metadata to use 
-			headerName: title inside of the header column
-            name: name of the process property. if it is empty or missing, no process property gets generated
-            normdataHeaderName: title of the header column to use for a gnd authority identifier
-            docType: define if the metadata should be added to the anchor or child element. Gets ignored, when the record is no multivolume. Default is 'child', valid values are 'child' and 'anchor'
-             -->
-		<metadata ugh="CatalogIDDigital" headerName="CatalogIDDigital" />
-		<metadata ugh="CatalogIDSource" headerName="CatalogIDSource" />
-		<metadata ugh="TitleDocMain" headerName="TitleDocMain" />
-		<metadata ugh="SBBPURL" headerName="OWNPURL" />
-		<metadata name="DigiParameterTYP" headerName="DigiParameterTYP" />
-		<metadata name="Schrifttyp" headerName="Schrifttyp" />			
+        <!--  cut 'Eliot, George, 1819-1880' into first- and last name -->
+        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)\, (.+?)$/$1/g" />
+        
 	</config>
 </config_plugin>

@@ -22,7 +22,10 @@ import de.intranda.goobi.plugins.util.Config;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
+import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
+import ugh.dl.Person;
+import ugh.dl.Prefs;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({ ConfigPlugins.class, HttpClientHelper.class })
@@ -33,10 +36,13 @@ public class JsonImportPluginTest {
 
     private ConfigOpacCatalogue archive;
 
+    private Prefs prefs;
+
     @Before
     public void setUp() throws Exception {
         config = getConfig();
-        String jsonResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/ils/39002098971741_7748458.json")), StandardCharsets.UTF_8);
+        //        String jsonResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/ils/39002098971741_7748458.json")), StandardCharsets.UTF_8);
+        String jsonResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/aspace/304086.json")), StandardCharsets.UTF_8);
 
         PowerMock.mockStatic(ConfigPlugins.class);
         PowerMock.mockStatic(HttpClientHelper.class);
@@ -48,6 +54,9 @@ public class JsonImportPluginTest {
         PowerMock.replay(ConfigPlugins.class);
 
         archive = new ConfigOpacCatalogue("", "", "https://files.intranda.com/", "", "iktlist", 80, "utf-8", "", null, "json", null, null);
+
+        prefs = new Prefs();
+        prefs.loadPrefs("src/test/resources/ruleset.xml");
     }
 
     @Test
@@ -60,10 +69,15 @@ public class JsonImportPluginTest {
     public void testFileUpload() throws Exception {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
-        Fileformat ff = plugin.search("", "7748458", archive, null);
+        Fileformat ff = plugin.search("", "7748458", archive, prefs);
+        DocStruct logical =ff.getDigitalDocument().getLogicalDocStruct();
+        assertNotNull(logical);
 
-        //        assertEquals(1, recordList.size());
-        //        assertEquals("7748458", recordList.get(0).getId());
+        assertEquals("304086",logical.getAllMetadata().get(0).getValue());
+
+        Person p =logical.getAllPersons().get(0);
+        assertEquals("George", p.getFirstname());
+        assertEquals("Eliot", p.getLastname());
     }
 
     @Test

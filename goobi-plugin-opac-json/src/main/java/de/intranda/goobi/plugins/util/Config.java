@@ -14,7 +14,11 @@ public class Config {
 
     private String defaultPublicationType;
 
-    List<DocumentType> documentTypeList = new ArrayList<>();
+    private List<DocumentType> documentTypeList = new ArrayList<>();
+
+    private List<MetadataField> metadataFieldList = new ArrayList<>();
+
+    private List<PersonField> personFieldList = new ArrayList<>();
 
     /**
      * loads the &lt;config&gt; block from xml file
@@ -24,22 +28,64 @@ public class Config {
 
     public Config(SubnodeConfiguration xmlConfig) {
 
-        defaultPublicationType = xmlConfig.getString("/defaultPublicationType", "Monograph");
+        defaultPublicationType = xmlConfig.getString("/defaultPublicationType", null);
 
         List<HierarchicalConfiguration> recordTypeList = xmlConfig.configurationsAt("/recordType");
         for (HierarchicalConfiguration recordType : recordTypeList) {
-            DocumentType type = new DocumentType(recordType.getString("@field"), recordType.getString("@expectedValue"),
-                    recordType.getString("@docType"), recordType.getString("@matchType", "exact"));
+            DocumentType type =
+                    new DocumentType(recordType.getString("@field"), recordType.getString("@docType"), recordType.getString("@anchorType", null));
             documentTypeList.add(type);
+        }
+
+        List<HierarchicalConfiguration> metadataList = xmlConfig.configurationsAt("/metadata");
+        for (HierarchicalConfiguration metadataType : metadataList) {
+            MetadataField type = new MetadataField(metadataType.getString("@field"), metadataType.getString("@metadata"),
+                    metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"));
+            metadataFieldList.add(type);
+        }
+
+        List<HierarchicalConfiguration> personList = xmlConfig.configurationsAt("/person");
+        for (HierarchicalConfiguration metadataType : personList) {
+            PersonField type = new PersonField(metadataType.getString("@field"), metadataType.getString("@metadata"),
+                    metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"));
+            personFieldList.add(type);
         }
     }
 
     @Data
     @AllArgsConstructor
     public class DocumentType {
-        private String jsonFieldName;
-        private String fieldValue;
+        private String field;
         private String publicationType;
-        private String matchType;
+        private String publicationAnchorType;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class MetadataField {
+
+        //        path to the field in json
+        private String field;
+        //        name of the field in ruleset
+        private String metadata;
+        //        regex to manipulate the value
+        private String regularExpression;
+        //        volume or anchor
+        private String docType;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public class PersonField {
+        //        path to the field in json
+        private String field;
+        //        name of the field in ruleset
+        private String metadata;
+        //        regex to get the firstname
+        private String firstname;
+        //        regex to get the lastname
+        private String lastname;
+        //        volume or anchor
+        private String docType;
     }
 }
