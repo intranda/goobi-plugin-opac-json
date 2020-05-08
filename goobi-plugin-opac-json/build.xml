@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+
+<project name="goobi-plugin-opac-json" default="devbuild">
+	<target name="devbuild">
+		<exec executable="mvn">
+			<arg value="package" />
+		</exec>
+		<copy file="target/plugin_intranda_opac_json.jar" todir="/opt/digiverso/goobi/plugins/opac/"/>
+	</target>
+</project>
