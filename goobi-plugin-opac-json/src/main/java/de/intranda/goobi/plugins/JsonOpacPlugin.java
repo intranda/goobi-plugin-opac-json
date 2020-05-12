@@ -125,7 +125,7 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
                 DocStruct logical = digDoc.createDocStruct(inPrefs.getDocStrctTypeByName(publicationType));
                 DocStruct physical = digDoc.createDocStruct(inPrefs.getDocStrctTypeByName("BoundBook"));
                 DocStruct anchor = null;
-                if (logical.getType().isAnchor() && StringUtils.isNotBlank(anchorType)) {
+                if (StringUtils.isNotBlank(anchorType)) {
                     anchor = digDoc.createDocStruct(inPrefs.getDocStrctTypeByName(anchorType));
                     anchor.addChild(logical);
                     digDoc.setLogicalDocStruct(anchor);
@@ -138,6 +138,9 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
 
                 parseMetadata(document, anchor, logical, inPrefs);
                 parsePerson(document, anchor, logical, inPrefs);
+
+                Metadata pathimagefiles = new Metadata(inPrefs.getMetadataTypeByName("pathimagefiles"));
+
             }
 
         }
@@ -209,17 +212,17 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
             if (StringUtils.isNotBlank(mf.getRegularExpression())) {
                 stringValue = perlUtil.substitute(mf.getRegularExpression(), stringValue);
             }
-        }
-        try {
-            Metadata metadata = new Metadata(prefs.getMetadataTypeByName(mf.getMetadata()));
-            metadata.setValue(stringValue);
-            if (anchor != null && mf.getDocType().equals("anchor")) {
-                anchor.addMetadata(metadata);
-            } else {
-                logical.addMetadata(metadata);
+            try {
+                Metadata metadata = new Metadata(prefs.getMetadataTypeByName(mf.getMetadata()));
+                metadata.setValue(stringValue);
+                if (anchor != null && mf.getDocType().equals("anchor")) {
+                    anchor.addMetadata(metadata);
+                } else {
+                    logical.addMetadata(metadata);
+                }
+            } catch (MetadataTypeNotAllowedException | DocStructHasNoTypeException e) {
+                log.error(e);
             }
-        } catch (MetadataTypeNotAllowedException | DocStructHasNoTypeException e) {
-            log.error(e);
         }
     }
 
