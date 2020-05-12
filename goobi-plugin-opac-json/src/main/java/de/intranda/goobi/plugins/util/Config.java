@@ -40,14 +40,16 @@ public class Config {
         List<HierarchicalConfiguration> metadataList = xmlConfig.configurationsAt("/metadata");
         for (HierarchicalConfiguration metadataType : metadataList) {
             MetadataField type = new MetadataField(metadataType.getString("@field"), metadataType.getString("@metadata"),
-                    metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"));
+                    metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"),
+                    metadataType.getString("@validationExpression", null));
             metadataFieldList.add(type);
         }
 
         List<HierarchicalConfiguration> personList = xmlConfig.configurationsAt("/person");
         for (HierarchicalConfiguration metadataType : personList) {
             PersonField type = new PersonField(metadataType.getString("@field"), metadataType.getString("@metadata"),
-                    metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"));
+                    metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"),
+                    metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null));
             personFieldList.add(type);
         }
     }
@@ -69,9 +71,11 @@ public class Config {
         //        name of the field in ruleset
         private String metadata;
         //        regex to manipulate the value
-        private String regularExpression;
+        private String manipulateRegularExpression;
         //        volume or anchor
         private String docType;
+        // check if regular expression matches with actual value
+        private String validateRegularExpression;
     }
 
     @Data
@@ -87,5 +91,10 @@ public class Config {
         private String lastname;
         //        volume or anchor
         private String docType;
+        //        regex to manipulate the value
+        private String manipulateRegularExpression;
+        // check if regular expression matches with actual value
+        private String validateRegularExpression;
+
     }
 }

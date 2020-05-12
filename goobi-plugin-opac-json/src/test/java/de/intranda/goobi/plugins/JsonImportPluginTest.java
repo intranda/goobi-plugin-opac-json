@@ -95,7 +95,7 @@ public class JsonImportPluginTest {
             if (md.getType().getName().equals("CatalogIDDigital")) {
                 assertEquals("7748458", md.getValue());
             } else if (md.getType().getName().equals("TitleDocMain")) {
-                assertEquals("Jane Wodening and Stan Brakhage scrapbooks", md.getValue());
+                assertEquals("Jane Wodening and Stan Brakhage scrapbooks, 1958-1967", md.getValue());
             }
         }
 
@@ -106,12 +106,15 @@ public class JsonImportPluginTest {
             } else if (md.getType().getName().equals("shelfmarksource")) {
                 assertEquals("229 YCAL MSS", md.getValue());
             } else if (md.getType().getName().equals("TitleDocMain")) {
-                assertEquals("Jane Wodening and Stan Brakhage scrapbooks 1", md.getValue());
-            } else if (md.getType().getName().equals("OtherTitle")) {
-                System.out.println(md.getValue());
+                assertEquals("Jane Wodening and Stan Brakhage scrapbooks", md.getValue());
             }
+            //            else if (md.getType().getName().equals("OtherTitle")) {
+            //                System.out.println(md.getValue());
+            //            }
+        }
 
-
+        for (Person person : logical.getAllPersons()) {
+            System.out.println(person.getFirstname() + " " + person.getLastname());
         }
     }
 
@@ -125,6 +128,12 @@ public class JsonImportPluginTest {
         DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
         assertNotNull(logical);
         assertEquals("Monograph", logical.getType().getName());
+
+
+        for (Metadata md : logical.getAllMetadata()) {
+            System.out.println(md.getType().getName() + ": " + md.getValue());
+        }
+
     }
 
 

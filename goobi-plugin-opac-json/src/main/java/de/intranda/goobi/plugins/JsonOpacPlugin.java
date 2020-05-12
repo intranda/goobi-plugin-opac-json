@@ -1,8 +1,8 @@
 package de.intranda.goobi.plugins;
 
-import java.nio.file.Path;
+import java.text.Normalizer;
 import java.util.List;
-import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -11,7 +11,7 @@ import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.apache.oro.text.perl.Perl5Util;
 import org.goobi.production.enums.PluginType;
-import org.goobi.production.plugin.interfaces.IOpacPluginVersion2;
+import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -23,6 +23,8 @@ import de.intranda.goobi.plugins.util.Config.MetadataField;
 import de.intranda.goobi.plugins.util.Config.PersonField;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
+import de.sub.goobi.helper.UghHelper;
+import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import de.unigoettingen.sub.search.opac.ConfigOpacDoctype;
 import lombok.Getter;
@@ -41,10 +43,12 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class JsonOpacPlugin implements IOpacPluginVersion2 {
+public class JsonOpacPlugin implements IOpacPlugin {
 
     /**
-     * record: 304086
+     * archiv: 304086
+     * multivolume: 7748458
+     * monograpgh: 9869346
      * 
      * <catalogue title="json opac test">
      * <config description="json" address="https://files.intranda.com/" port="80" database="1.65" iktlist="IKTLIST-GBV.xml" ucnf="XPNOFF=1" opacType=
@@ -61,6 +65,11 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
     private PluginType type = PluginType.Opac;
 
     private Config config = null;
+
+    private int hitcount;
+    protected String gattung = "Aa";
+    protected String atstsl;
+    protected ConfigOpacCatalogue coc;
 
     public Config getConfig() {
 
@@ -81,6 +90,8 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
 
     @Override
     public Fileformat search(String inSuchfeld, String inSuchbegriff, ConfigOpacCatalogue coc, Prefs inPrefs) throws Exception {
+        this.coc = coc;
+
         if (config == null) {
             config = getConfig();
         }
@@ -89,7 +100,7 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
         String response = HttpClientHelper.getStringFromUrl(url);
 
         if (StringUtils.isNotBlank(response)) {
-
+            hitcount = 1;
             Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
 
             String publicationType = null;
@@ -139,10 +150,14 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
                 parseMetadata(document, anchor, logical, inPrefs);
                 parsePerson(document, anchor, logical, inPrefs);
 
-                Metadata pathimagefiles = new Metadata(inPrefs.getMetadataTypeByName("pathimagefiles"));
+                gattung = digDoc.getLogicalDocStruct().getType().getName();
+                //                Metadata pathimagefiles = new Metadata(inPrefs.getMetadataTypeByName("pathimagefiles"));
+                ConfigOpacDoctype codt = getOpacDocType();
 
             }
 
+        } else {
+            hitcount = 0;
         }
         return fileformat;
     }
@@ -182,14 +197,23 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
                     addMetadata(stringValue, mf, anchor, logical, prefs);
                 }
             } catch (PathNotFoundException e) {
-                log.info("Path is invalid or field could not be found ", e);
+                log.debug("Path is invalid or field could not be found ", e);
             }
         }
     }
 
     private void addPerson(String stringValue, PersonField pf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
-            // TODO first check if it matches?
+            if (StringUtils.isNotBlank(pf.getValidateRegularExpression())) {
+                if (!perlUtil.match(pf.getValidateRegularExpression(), stringValue)) {
+                    return;
+                }
+            }
+
+            if (StringUtils.isNotBlank(pf.getManipulateRegularExpression())) {
+                stringValue = perlUtil.substitute(pf.getManipulateRegularExpression(), stringValue);
+            }
+
             String firstname = perlUtil.substitute(pf.getFirstname(), stringValue);
             String lastname = perlUtil.substitute(pf.getLastname(), stringValue);
             try {
@@ -202,15 +226,21 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
                     logical.addPerson(person);
                 }
             } catch (MetadataTypeNotAllowedException | IncompletePersonObjectException e) {
-                log.error(e);
+                log.debug(e);
             }
         }
     }
 
     private void addMetadata(String stringValue, MetadataField mf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
-            if (StringUtils.isNotBlank(mf.getRegularExpression())) {
-                stringValue = perlUtil.substitute(mf.getRegularExpression(), stringValue);
+            if (StringUtils.isNotBlank(mf.getValidateRegularExpression())) {
+                if (!perlUtil.match(mf.getValidateRegularExpression(), stringValue)) {
+                    return;
+                }
+            }
+
+            if (StringUtils.isNotBlank(mf.getManipulateRegularExpression())) {
+                stringValue = perlUtil.substitute(mf.getManipulateRegularExpression(), stringValue);
             }
             try {
                 Metadata metadata = new Metadata(prefs.getMetadataTypeByName(mf.getMetadata()));
@@ -221,7 +251,7 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
                     logical.addMetadata(metadata);
                 }
             } catch (MetadataTypeNotAllowedException | DocStructHasNoTypeException e) {
-                log.error(e);
+                log.debug(e);
             }
         }
     }
@@ -243,50 +273,71 @@ public class JsonOpacPlugin implements IOpacPluginVersion2 {
 
     @Override
     public int getHitcount() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public String getAtstsl() {
-        // TODO Auto-generated method stub
-        return null;
+        return hitcount;
     }
 
     @Override
     public ConfigOpacDoctype getOpacDocType() {
-        // TODO Auto-generated method stub
-        return null;
+
+        ConfigOpac co;
+        ConfigOpacDoctype cod = null;
+
+        co = ConfigOpac.getInstance();
+        cod = co.getDoctypeByMapping(this.gattung, this.coc.getTitle());
+        if (cod == null) {
+            cod = co.getAllDoctypes().get(0);
+            this.gattung = cod.getMappings().get(0);
+        }
+        return cod;
     }
 
     @Override
-    public String createAtstsl(String value, String value2) {
-        // TODO Auto-generated method stub
-        return null;
+    public String createAtstsl(String title, String author) {
+        title = Normalizer.normalize(title, Normalizer.Form.NFC);
+        if (author != null) {
+            author = Normalizer.normalize(author, Normalizer.Form.NFC);
+        }
+
+        StringBuilder result = new StringBuilder(8);
+        if (author != null && author.trim().length() > 0) {
+            result.append(author.length() > 4 ? author.substring(0, 4) : author);
+            result.append(title.length() > 4 ? title.substring(0, 4) : title);
+        } else {
+            StringTokenizer titleWords = new StringTokenizer(title);
+            int wordNo = 1;
+            while (titleWords.hasMoreTokens() && wordNo < 5) {
+                String word = titleWords.nextToken();
+                switch (wordNo) {
+                    case 1:
+                        result.append(word.length() > 4 ? word.substring(0, 4) : word);
+                        break;
+                    case 2:
+                    case 3:
+                        result.append(word.length() > 2 ? word.substring(0, 2) : word);
+                        break;
+                    case 4:
+                        result.append(word.length() > 1 ? word.substring(0, 1) : word);
+                        break;
+                }
+                wordNo++;
+            }
+        }
+        String res = UghHelper.convertUmlaut(result.toString()).toLowerCase();
+        return res.replaceAll("[\\W]", "");
     }
 
     @Override
-    public void setAtstsl(String createAtstsl) {
-        // TODO Auto-generated method stub
+    public String getAtstsl() {
+        return this.atstsl;
+    }
 
+    @Override
+    public void setAtstsl(String atstsl) {
+        this.atstsl = atstsl;
     }
 
     @Override
     public String getGattung() {
-        // TODO Auto-generated method stub
-        return null;
+        return gattung;
     }
-
-    @Override
-    public Map<String, String> getRawDataAsString() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public List<Path> getRecordPathList() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
 }

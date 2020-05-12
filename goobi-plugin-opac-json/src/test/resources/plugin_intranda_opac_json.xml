@@ -22,23 +22,67 @@
          -->
          <!-- metadata for archive json -->
 		<metadata metadata="CatalogIDDigital" field="$.identifier" regularExpression="s/\/aspace\/repositories\/11\/archival_objects\/(.+)/$1/g" docType="volume"  />			
-<!--         <metadata metadata="TitleDocMain" field="$.title" /> -->
         <metadata metadata="PublicationYear" field="$.date" />
         <metadata metadata="DocLanguage" field="$.language" />
         <!--  cut 'Eliot, George, 1819-1880' into first- and last name -->
-        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)\, (.+?)$/$1/g" />
+        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g"/>
+        
+        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^\w+?\, \w+?\. .+$/" regularExpression="s/^(\w+?)\, (\w+?)\. .+$/$1\, $2/g"/>
+        
+        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^\w+?\, \w+?\.?$/" />
+        
         
         <!-- metadata for ils bib json -->
        <metadata metadata="CatalogIDDigital" field="$.children[?(@.itemCount > 1)].children[0].itemId" docType="volume"  />			
        <metadata metadata="CatalogIDDigital" field="$.uri" regularExpression="s/\/ils\/bib\/(.+)/$1/g" docType="anchor"  />      
        
        <metadata metadata="shelfmarksource" field="$.identifierShelfMark" docType="volume" />      
+
+<!--       
        <metadata metadata="TitleDocMain" field="concat( $.title[0]\,&quot; &quot;\,$.children[0].children[0].sequenceNumber)" docType="volume" />  
-       
-       <metadata metadata="TitleDocMain" field="$[?(@.children[?(@.itemCount == 1)])].title[0]" docType="volume" />  
+      -->  
+        
+       <!--  
+      -->
+       <metadata metadata="TitleDocMain" field="$.title" docType="volume" />  
      
-       <metadata metadata="TitleDocMain" field="$[?(@.children[?(@.itemCount &gt; 1)])].title[0]" docType="anchor" />  
+       <metadata metadata="TitleDocMain" field="$.titleStatement" docType="anchor" />  
+       <metadata metadata="OtherTitle"  field="$.alternativeTitle" docType="volume"  />    
+    
+    
+       <metadata metadata="PlaceOfPublication"  field="$.publicationPlace" docType="volume"  />    
+       <metadata metadata="PublicationYear"  field="$.date" docType="volume"  />  
+
+       <metadata metadata="physicalDescriptionExtent" field="$.extent" docType="volume"  />  
+       <metadata metadata="DocLanguage"  field="$.language" docType="volume"  />  
+       <metadata metadata="Description"  field="$.description" docType="volume"  />  
      
-    <metadata metadata="OtherTitle"  field="$.alternativeTitle" docType="volume"  />    
+<!--     "subjectName": create new metadata/person with role other?-->
+     
+      <metadata metadata="SubjectTopic"  field="$.subjectTopic" docType="volume"  />  
+      <metadata metadata="SubjectForm" field="$.genre" docType="volume"  />  
+
+      <metadata metadata="Resource" field="$.references" docType="volume"  />  
+     
+   
+      <metadata metadata="Provenience" field="$.provenanceUncontrolled" docType="volume"  />  
+
+
+      <metadata metadata="CurrentNo" field="$..children[0].children[0].sequenceNumber" docType="volume"  />  
+      <metadata metadata="CurrentNoSorting" field="$..children[0].children[0].sequenceNumber" docType="volume"  />
+
+
+        <person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g"/>
+        
+        <person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^\w+?\, \w+?\. .+$/" regularExpression="s/^(\w+?)\, (\w+?)\. .+$/$1\, $2/g"/>
+        
+        <person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^\w+?\, \w+?\.?$/" />
+
     </config>
 </config_plugin>
