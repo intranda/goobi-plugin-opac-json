@@ -3,13 +3,10 @@
 	
  <!-- Syntax: https://github.com/json-path/JsonPath#path-examples   -->
 
-        <!-- check if field  /children/children/recordType with value 'item' exists -->
-        <recordType field="$.children[?(@.itemCount &gt; 1)]"  docType="Volume" anchorType="MultiVolumeWork" />
-
-        <recordType field="$.children[?(@.itemCount == 1)]" docType="Monograph" />
         <!-- check if "recordType": "archival_object" exists -->
-        <recordType field="[?(@.['recordType']=='archival_object')]" docType="Monograph" />
-        
+        <recordType field="[?(@.recordType=='archival_object')]" docType="Monograph" />
+        <recordType field="$.children[?(@.itemCount &gt; 1)]"  docType="Volume" anchorType="MultiVolumeWork" />
+        <recordType field="$.children[?(@.itemCount == 1)]" docType="Monograph" />
 
 <!-- default publication type if it cannot be detected. If missing or empty, no record will be created -->
        <defaultPublicationType>Monograph</defaultPublicationType>
