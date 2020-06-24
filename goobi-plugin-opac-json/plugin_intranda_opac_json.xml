@@ -1,6 +1,10 @@
 ﻿<config_plugin>
 	<config>
 
+        <authentication>
+            <username></username>
+            <password></password>
+        </authentication>
 		<!-- Syntax: https://github.com/json-path/JsonPath#path-examples -->
 
 		<!-- check if "recordType": "archival_object" exists -->

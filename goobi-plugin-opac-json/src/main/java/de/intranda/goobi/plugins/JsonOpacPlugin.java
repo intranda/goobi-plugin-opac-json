@@ -46,9 +46,7 @@ import ugh.fileformats.mets.MetsMods;
 public class JsonOpacPlugin implements IOpacPlugin {
 
     /**
-     * archiv: 304086
-     * multivolume: 7748458
-     * monograpgh: 9869346
+     * archiv: 304086 multivolume: 7748458 monograpgh: 9869346
      * 
      * <catalogue title="json opac test">
      * <config description="json" address="https://files.intranda.com/" port="80" database="1.65" iktlist="IKTLIST-GBV.xml" ucnf="XPNOFF=1" opacType=
@@ -97,8 +95,12 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
         Fileformat fileformat = null;
         String url = coc.getAddress() + inSuchbegriff;
-        String response = HttpClientHelper.getStringFromUrl(url);
-
+        String response = null;
+        if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword())) {
+            HttpClientHelper.getStringFromUrl(url, config.getUsername(), config.getPassword(), null, "-1");
+        } else {
+            response = HttpClientHelper.getStringFromUrl(url);
+        }
         if (StringUtils.isNotBlank(response)) {
             hitcount = 1;
             Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);

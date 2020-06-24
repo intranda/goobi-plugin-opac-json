@@ -20,6 +20,9 @@ public class Config {
 
     private List<PersonField> personFieldList = new ArrayList<>();
 
+    private String username;
+    private String password;
+
     /**
      * loads the &lt;config&gt; block from xml file
      * 
@@ -52,6 +55,11 @@ public class Config {
                     metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null));
             personFieldList.add(type);
         }
+
+        username = xmlConfig.getString("/authentication/username", null);
+        password = xmlConfig.getString("/authentication/password", null);
+
+
     }
 
     @Data
