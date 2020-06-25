@@ -1,7 +1,11 @@
 package de.intranda.goobi.plugins;
 
+import java.io.IOException;
 import java.text.Normalizer;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
@@ -9,6 +13,18 @@ import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.oro.text.perl.Perl5Util;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IOpacPlugin;
@@ -69,16 +85,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
     protected String atstsl;
     protected ConfigOpacCatalogue coc;
 
+    private String templateName;
+
     public Config getConfig() {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
         xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
-
+        xmlConfig.setListDelimiter(',');
         SubnodeConfiguration myconfig = null;
         try {
-            myconfig = xmlConfig.configurationAt("//config");
+            myconfig = xmlConfig.configurationAt("//config[./template='" + templateName + "']");
         } catch (IllegalArgumentException e) {
+            myconfig = xmlConfig.configurationAt("//config[./template='*']");
         }
         Config config = new Config(myconfig);
 
@@ -94,12 +113,23 @@ public class JsonOpacPlugin implements IOpacPlugin {
             config = getConfig();
         }
         Fileformat fileformat = null;
-        String url = coc.getAddress() + inSuchbegriff;
+        String url = coc.getAddress() + inSuchbegriff.trim();
         String response = null;
-        if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword())) {
-            HttpClientHelper.getStringFromUrl(url, config.getUsername(), config.getPassword(), null, "-1");
+        String sessionId = null;
+        if (config.getLoginUrl() != null) {
+            String loginUrl = config.getLoginUrl();
+            loginUrl = loginUrl.replace("{username}", config.getUsername());
+            loginUrl = loginUrl.replace("{password}", config.getPassword());
+            String login = login(config.getPassword(), loginUrl);
+            Object document = Configuration.defaultConfiguration().jsonProvider().parse(login);
+            sessionId = JsonPath.read(document, config.getSessionid());
+        }
+
+        if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
+            response= getStringFromUrl(url, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
         } else {
-            response = HttpClientHelper.getStringFromUrl(url);
+            response = getStringFromUrl(url, null, null, config.getHeaderParameter(), sessionId);
+            System.out.println(response);
         }
         if (StringUtils.isNotBlank(response)) {
             hitcount = 1;
@@ -266,7 +296,14 @@ public class JsonOpacPlugin implements IOpacPlugin {
             anwer = ((Integer) value).toString();
         } else if (value instanceof Boolean) {
             return (boolean) value ? "true" : "false";
-        } else {
+        } else if (value instanceof LinkedHashMap) {
+            Map<String, String> map = (Map<String, String>) value;
+            for (String key : map.keySet()) {
+                System.out.println(key + ": " + map.get(key));
+            }
+        }
+
+        else {
             log.error("Type not mapped: " + value.getClass());
         }
 
@@ -341,5 +378,82 @@ public class JsonOpacPlugin implements IOpacPlugin {
     @Override
     public String getGattung() {
         return gattung;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    private static String login(String password, String... parameter) {
+        String response = "";
+        CloseableHttpClient client = null;
+        String url = parameter[0];
+        HttpPost method = new HttpPost(url);
+        if (parameter != null && parameter.length > 4) {
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(parameter[3], Integer.valueOf(parameter[4]).intValue()),
+                    new UsernamePasswordCredentials(parameter[1], parameter[2]));
+            client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+        } else {
+            client = HttpClientBuilder.create().build();
+        }
+        try {
+            if (StringUtils.isNotBlank(password)) {
+                List<NameValuePair> params = new ArrayList<>();
+                params.add(new BasicNameValuePair("password", password));
+                method.setEntity(new UrlEncodedFormEntity(params));
+            }
+            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+        } catch (IOException e) {
+            log.error("Cannot execute URL " + url, e);
+        } finally {
+            method.releaseConnection();
+
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+        return response;
+    }
+
+    private static String getStringFromUrl(String url, String username, String password, String headerParam, String headerParamValue) {
+        String response = "";
+        CloseableHttpClient client = null;
+        HttpGet method = new HttpGet(url);
+
+        if (username != null && password != null) {
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
+            client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+
+        } else {
+            client = HttpClientBuilder.create().build();
+        }
+
+        if (headerParam != null) {
+            // add header parameter
+            method.setHeader(headerParam, headerParamValue);
+        }
+
+        try {
+            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+        } catch (IOException e) {
+            log.error("Cannot execute URL " + url, e);
+        } finally {
+            method.releaseConnection();
+
+            if (client != null) {
+                try {
+                    client.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
+            }
+        }
+        return response;
     }
 }

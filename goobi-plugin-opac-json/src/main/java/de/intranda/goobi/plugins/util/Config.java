@@ -22,6 +22,9 @@ public class Config {
 
     private String username;
     private String password;
+    private String loginUrl;
+    private String sessionid;
+    private String headerParameter;
 
     /**
      * loads the &lt;config&gt; block from xml file
@@ -44,7 +47,7 @@ public class Config {
         for (HierarchicalConfiguration metadataType : metadataList) {
             MetadataField type = new MetadataField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"),
-                    metadataType.getString("@validationExpression", null));
+                    metadataType.getString("@validationExpression", null), metadataType.getString("@identifier", null));
             metadataFieldList.add(type);
         }
 
@@ -52,13 +55,16 @@ public class Config {
         for (HierarchicalConfiguration metadataType : personList) {
             PersonField type = new PersonField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"),
-                    metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null));
+                    metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null),
+                    metadataType.getString("@identifier", null));
             personFieldList.add(type);
         }
 
         username = xmlConfig.getString("/authentication/username", null);
         password = xmlConfig.getString("/authentication/password", null);
-
+        loginUrl = xmlConfig.getString("/authentication/loginUrl", null);
+        sessionid = xmlConfig.getString("/authentication/sessionid", null);
+        headerParameter = xmlConfig.getString("/authentication/headerParameter", null);
 
     }
 
@@ -84,6 +90,8 @@ public class Config {
         private String docType;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
+
+        private String identifier;
     }
 
     @Data
@@ -103,6 +111,8 @@ public class Config {
         private String manipulateRegularExpression;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
+
+        private String identifier;
 
     }
 }
