@@ -47,7 +47,9 @@ public class Config {
         for (HierarchicalConfiguration metadataType : metadataList) {
             MetadataField type = new MetadataField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"),
-                    metadataType.getString("@validationExpression", null), metadataType.getString("@identifier", null));
+                    metadataType.getString("@validationExpression", null), metadataType.getString("@identifier", null),
+                    metadataType.getBoolean("@followLink", false), metadataType.getString("@templateName", null),
+                    metadataType.getString("@basisUrl", null));
             metadataFieldList.add(type);
         }
 
@@ -56,7 +58,8 @@ public class Config {
             PersonField type = new PersonField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"),
                     metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null),
-                    metadataType.getString("@identifier", null));
+                    metadataType.getString("@identifier", null), metadataType.getBoolean("@followLink", false),
+                    metadataType.getString("@templateName", null), metadataType.getString("@basisUrl", null));
             personFieldList.add(type);
         }
 
@@ -90,8 +93,15 @@ public class Config {
         private String docType;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
-
+        // search for identifier value
         private String identifier;
+        // follow the link in metadata value
+        private boolean followLink;
+        // use this template for metadata linked metadata
+        private String templateName;
+        // basis url for new request
+        private String basisUrl;
+
     }
 
     @Data
@@ -111,8 +121,14 @@ public class Config {
         private String manipulateRegularExpression;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
-
+        // search for identifier value
         private String identifier;
+        // follow the link in metadata value
+        private boolean followLink;
+        // use this template for metadata linked metadata
+        private String templateName;
+        // basis url for new request
+        private String basisUrl;
 
     }
 }

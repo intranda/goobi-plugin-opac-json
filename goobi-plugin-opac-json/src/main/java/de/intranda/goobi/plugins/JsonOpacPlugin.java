@@ -45,6 +45,7 @@ import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import de.unigoettingen.sub.search.opac.ConfigOpacDoctype;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+import net.minidev.json.JSONArray;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
@@ -87,7 +88,9 @@ public class JsonOpacPlugin implements IOpacPlugin {
 
     private String templateName;
 
-    public Config getConfig() {
+    private String sessionId = null;
+
+    public Config getConfig(String templateName) {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
@@ -110,12 +113,12 @@ public class JsonOpacPlugin implements IOpacPlugin {
         this.coc = coc;
 
         if (config == null) {
-            config = getConfig();
+            config = getConfig(templateName);
         }
         Fileformat fileformat = null;
         String url = coc.getAddress() + inSuchbegriff.trim();
         String response = null;
-        String sessionId = null;
+
         if (config.getLoginUrl() != null) {
             String loginUrl = config.getLoginUrl();
             loginUrl = loginUrl.replace("{username}", config.getUsername());
@@ -126,10 +129,9 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
 
         if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
-            response= getStringFromUrl(url, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
+            response = getStringFromUrl(url, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
         } else {
             response = getStringFromUrl(url, null, null, config.getHeaderParameter(), sessionId);
-            System.out.println(response);
         }
         if (StringUtils.isNotBlank(response)) {
             hitcount = 1;
@@ -179,12 +181,12 @@ public class JsonOpacPlugin implements IOpacPlugin {
 
                 // pathimagefiles
 
-                parseMetadata(document, anchor, logical, inPrefs);
-                parsePerson(document, anchor, logical, inPrefs);
+                parseMetadata(document, anchor, logical, inPrefs, config);
+                parsePerson(document, anchor, logical, inPrefs, config);
 
                 gattung = digDoc.getLogicalDocStruct().getType().getName();
                 //                Metadata pathimagefiles = new Metadata(inPrefs.getMetadataTypeByName("pathimagefiles"));
-                ConfigOpacDoctype codt = getOpacDocType();
+                //                ConfigOpacDoctype codt = getOpacDocType();
 
             }
 
@@ -194,7 +196,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return fileformat;
     }
 
-    private void parsePerson(Object document, DocStruct anchor, DocStruct logical, Prefs inPrefs) {
+    private void parsePerson(Object document, DocStruct anchor, DocStruct logical, Prefs inPrefs, Config config) {
         for (PersonField pf : config.getPersonFieldList()) {
             try {
                 Object object = JsonPath.read(document, pf.getField());
@@ -202,11 +204,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     List<?> valueList = (List) object;
                     for (Object value : valueList) {
                         String stringValue = getValueAsString(value);
-                        addPerson(stringValue, pf, anchor, logical, inPrefs);
+                        String normdata = null;
+                        if (pf.getIdentifier() != null) {
+                            normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue)));
+                        }
+                        addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                     }
                 } else {
                     String stringValue = getValueAsString(object);
-                    addPerson(stringValue, pf, anchor, logical, inPrefs);
+                    String normdata = null;
+                    if (pf.getIdentifier() != null) {
+                        normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue)));
+                    }
+                    addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                 }
             } catch (PathNotFoundException e) {
                 log.info("Path is invalid or field could not be found ", e);
@@ -214,7 +224,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
     }
 
-    private void parseMetadata(Object document, DocStruct anchor, DocStruct logical, Prefs prefs) {
+    private void parseMetadata(Object document, DocStruct anchor, DocStruct logical, Prefs prefs, Config config) {
         for (MetadataField mf : config.getMetadataFieldList()) {
             try {
                 Object object = JsonPath.read(document, mf.getField());
@@ -222,11 +232,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     List<?> valueList = (List) object;
                     for (Object value : valueList) {
                         String stringValue = getValueAsString(value);
-                        addMetadata(stringValue, mf, anchor, logical, prefs);
+                        String normdata = null;
+                        if (mf.getIdentifier() != null) {
+                            normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue)));
+                        }
+                        addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
                 } else {
                     String stringValue = getValueAsString(object);
-                    addMetadata(stringValue, mf, anchor, logical, prefs);
+                    String normdata = null;
+                    if (mf.getIdentifier() != null) {
+                        normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue)));
+                    }
+                    addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                 }
             } catch (PathNotFoundException e) {
                 log.debug("Path is invalid or field could not be found ", e);
@@ -234,7 +252,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
     }
 
-    private void addPerson(String stringValue, PersonField pf, DocStruct anchor, DocStruct logical, Prefs prefs) {
+    private void addPerson(String stringValue, String identifier, PersonField pf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
             if (StringUtils.isNotBlank(pf.getValidateRegularExpression())) {
                 if (!perlUtil.match(pf.getValidateRegularExpression(), stringValue)) {
@@ -245,25 +263,51 @@ public class JsonOpacPlugin implements IOpacPlugin {
             if (StringUtils.isNotBlank(pf.getManipulateRegularExpression())) {
                 stringValue = perlUtil.substitute(pf.getManipulateRegularExpression(), stringValue);
             }
-
-            String firstname = perlUtil.substitute(pf.getFirstname(), stringValue);
-            String lastname = perlUtil.substitute(pf.getLastname(), stringValue);
-            try {
-                Person person = new Person(prefs.getMetadataTypeByName(pf.getMetadata()));
-                person.setFirstname(firstname);
-                person.setLastname(lastname);
-                if (anchor != null && pf.getDocType().equals("anchor")) {
-                    anchor.addPerson(person);
+            if (pf.isFollowLink() && StringUtils.isNotBlank(pf.getTemplateName())) {
+                Config templateConfig = getConfig(pf.getTemplateName());
+                String uri = null;
+                if (StringUtils.isNotBlank(pf.getBasisUrl())) {
+                    uri = pf.getBasisUrl() + stringValue;
                 } else {
-                    logical.addPerson(person);
+                    uri = coc.getAddress() + stringValue;
                 }
-            } catch (MetadataTypeNotAllowedException | IncompletePersonObjectException e) {
-                log.debug(e);
-            }
-        }
+                String response = null;
+
+                if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
+                    response = getStringFromUrl(uri, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
+                } else {
+                    response = getStringFromUrl(uri, null, null, config.getHeaderParameter(), sessionId);
+                }
+
+                if (StringUtils.isNotBlank(response)) {
+                    Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
+                    parseMetadata(document, anchor, logical, prefs, templateConfig);
+                    parsePerson(document, anchor, logical, prefs, templateConfig);
+                }
+
+            } else {
+                String firstname = perlUtil.substitute(pf.getFirstname(), stringValue);
+                String lastname = perlUtil.substitute(pf.getLastname(), stringValue);
+                try {
+                    Person person = new Person(prefs.getMetadataTypeByName(pf.getMetadata()));
+                    person.setFirstname(firstname);
+                    person.setLastname(lastname);
+                    if (identifier != null) {
+                        person.setAuthorityValue(identifier);
+                    }
+                    if (anchor != null && pf.getDocType().equals("anchor")) {
+                        anchor.addPerson(person);
+                    } else {
+                        logical.addPerson(person);
+                    }
+                } catch (MetadataTypeNotAllowedException | IncompletePersonObjectException e) {
+                    log.debug(e);
+                }
+
+            }}
     }
 
-    private void addMetadata(String stringValue, MetadataField mf, DocStruct anchor, DocStruct logical, Prefs prefs) {
+    private void addMetadata(String stringValue, String identifier, MetadataField mf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
             if (StringUtils.isNotBlank(mf.getValidateRegularExpression())) {
                 if (!perlUtil.match(mf.getValidateRegularExpression(), stringValue)) {
@@ -274,16 +318,45 @@ public class JsonOpacPlugin implements IOpacPlugin {
             if (StringUtils.isNotBlank(mf.getManipulateRegularExpression())) {
                 stringValue = perlUtil.substitute(mf.getManipulateRegularExpression(), stringValue);
             }
-            try {
-                Metadata metadata = new Metadata(prefs.getMetadataTypeByName(mf.getMetadata()));
-                metadata.setValue(stringValue);
-                if (anchor != null && mf.getDocType().equals("anchor")) {
-                    anchor.addMetadata(metadata);
+            if (mf.isFollowLink() && StringUtils.isNotBlank(mf.getTemplateName())) {
+                Config templateConfig = getConfig(mf.getTemplateName());
+                String uri = null;
+                if (StringUtils.isNotBlank(mf.getBasisUrl())) {
+                    uri = mf.getBasisUrl() + stringValue;
                 } else {
-                    logical.addMetadata(metadata);
+                    uri = coc.getAddress() + stringValue;
                 }
-            } catch (MetadataTypeNotAllowedException | DocStructHasNoTypeException e) {
-                log.debug(e);
+                String response = null;
+
+
+                if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
+                    response = getStringFromUrl(uri, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
+                } else {
+                    response = getStringFromUrl(uri, null, null, config.getHeaderParameter(), sessionId);
+                }
+
+                if (StringUtils.isNotBlank(response)) {
+                    Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
+                    parseMetadata(document, anchor, logical, prefs, templateConfig);
+                    parsePerson(document, anchor, logical, prefs, templateConfig);
+                }
+
+            } else {
+                try {
+                    Metadata metadata = new Metadata(prefs.getMetadataTypeByName(mf.getMetadata()));
+                    metadata.setValue(stringValue);
+                    if (identifier != null) {
+                        metadata.setAuthorityValue(identifier);
+                    }
+
+                    if (anchor != null && mf.getDocType().equals("anchor")) {
+                        anchor.addMetadata(metadata);
+                    } else {
+                        logical.addMetadata(metadata);
+                    }
+                } catch (MetadataTypeNotAllowedException | DocStructHasNoTypeException e) {
+                    log.debug(e);
+                }
             }
         }
     }
@@ -299,8 +372,11 @@ public class JsonOpacPlugin implements IOpacPlugin {
         } else if (value instanceof LinkedHashMap) {
             Map<String, String> map = (Map<String, String>) value;
             for (String key : map.keySet()) {
-                System.out.println(key + ": " + map.get(key));
+                log.error("not mapped: " + key + ": " + map.get(key));
             }
+        }else if (value instanceof JSONArray) {
+            JSONArray array = (JSONArray) value;
+            return (String) array.get(0);
         }
 
         else {
