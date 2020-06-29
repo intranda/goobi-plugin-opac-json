@@ -87,6 +87,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
     protected ConfigOpacCatalogue coc;
 
     private String templateName;
+    private String projectName;
 
     private String sessionId = null;
 
@@ -103,6 +104,23 @@ public class JsonOpacPlugin implements IOpacPlugin {
             myconfig = xmlConfig.configurationAt("//config[./template='*']");
         }
         Config config = new Config(myconfig);
+        return config;
+    }
+
+
+    public Config getConfigForProject() {
+
+        XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
+        xmlConfig.setExpressionEngine(new XPathExpressionEngine());
+        xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
+        xmlConfig.setListDelimiter(',');
+        SubnodeConfiguration myconfig = null;
+        try {
+            myconfig = xmlConfig.configurationAt("//config[./project='" + projectName + "']");
+        } catch (IllegalArgumentException e) {
+            myconfig = xmlConfig.configurationAt("//config[./project='*']");
+        }
+        Config config = new Config(myconfig);
 
         return config;
 
@@ -113,7 +131,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         this.coc = coc;
 
         if (config == null) {
-            config = getConfig(templateName);
+            config = getConfigForProject();
         }
         Fileformat fileformat = null;
         String url = coc.getAddress() + inSuchbegriff.trim();
@@ -531,5 +549,9 @@ public class JsonOpacPlugin implements IOpacPlugin {
             }
         }
         return response;
+    }
+
+    public void setProjectName(String projectName) {
+        this.projectName = projectName;
     }
 }
