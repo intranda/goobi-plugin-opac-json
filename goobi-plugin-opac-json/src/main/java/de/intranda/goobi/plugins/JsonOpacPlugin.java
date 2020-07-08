@@ -37,6 +37,7 @@ import de.intranda.goobi.plugins.util.Config;
 import de.intranda.goobi.plugins.util.Config.DocumentType;
 import de.intranda.goobi.plugins.util.Config.MetadataField;
 import de.intranda.goobi.plugins.util.Config.PersonField;
+import de.intranda.goobi.plugins.util.Config.SearchField;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.UghHelper;
@@ -107,7 +108,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return config;
     }
 
-
     public Config getConfigForProject() {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
@@ -134,7 +134,54 @@ public class JsonOpacPlugin implements IOpacPlugin {
             config = getConfigForProject();
         }
         Fileformat fileformat = null;
-        String url = coc.getAddress() + inSuchbegriff.trim();
+        String url = null;
+        // find url to use
+        for (SearchField sf : config.getFieldList()) {
+            switch (sf.getType()) {
+                case "text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+                case "select":
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+                case "select+text":
+                    if (StringUtils.isNotBlank(sf.getText()) && StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+            }
+        }
+        if (StringUtils.isBlank(url)) {
+            url = coc.getAddress();
+        }
+        // replace variables in url
+        for (SearchField sf : config.getFieldList()) {
+            switch (sf.getType()) {
+                case "text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
+                    }
+                    break;
+                case "select":
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
+                    }
+                    break;
+                case "select+text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
+                    }
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
+                    }
+
+            }
+        }
+
         String response = null;
 
         if (config.getLoginUrl() != null) {
@@ -224,7 +271,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         String stringValue = getValueAsString(value);
                         String normdata = null;
                         if (pf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue)));
+                            normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
                         }
                         addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                     }
@@ -232,7 +279,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     String stringValue = getValueAsString(object);
                     String normdata = null;
                     if (pf.getIdentifier() != null) {
-                        normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue)));
+                        normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
                     }
                     addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                 }
@@ -252,7 +299,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         String stringValue = getValueAsString(value);
                         String normdata = null;
                         if (mf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue)));
+                            normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
                         }
                         addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
@@ -260,7 +307,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     String stringValue = getValueAsString(object);
                     String normdata = null;
                     if (mf.getIdentifier() != null) {
-                        normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue)));
+                        normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
                     }
                     addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                 }
@@ -322,7 +369,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     log.debug(e);
                 }
 
-            }}
+            }
+        }
     }
 
     private void addMetadata(String stringValue, String identifier, MetadataField mf, DocStruct anchor, DocStruct logical, Prefs prefs) {
@@ -345,7 +393,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     uri = coc.getAddress() + stringValue;
                 }
                 String response = null;
-
 
                 if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
                     response = getStringFromUrl(uri, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
@@ -392,9 +439,11 @@ public class JsonOpacPlugin implements IOpacPlugin {
             for (String key : map.keySet()) {
                 log.error("not mapped: " + key + ": " + map.get(key));
             }
-        }else if (value instanceof JSONArray) {
+        } else if (value instanceof JSONArray) {
             JSONArray array = (JSONArray) value;
-            return (String) array.get(0);
+            if (!array.isEmpty()) {
+                return (String) array.get(0);
+            }
         }
 
         else {
@@ -474,6 +523,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return gattung;
     }
 
+    @Override
     public void setTemplateName(String templateName) {
         this.templateName = templateName;
     }
@@ -551,7 +601,25 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return response;
     }
 
+    @Override
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    @Override
+    public String getGui() {
+        return "/uii/jsonOpacPlugin.xhtml";
+        //        return "/uii/includes/process/process_new_opac.xhtml";
+    }
+
+    public List<SearchField> getSearchFieldList() {
+        if (config == null) {
+            config = getConfigForProject();
+        }
+        return config.getFieldList();
+    }
+
+    public int getSizeOfSearchFieldList() {
+        return getSearchFieldList().size();
     }
 }
