@@ -1,12 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>de.intranda.goobi.plugins.opac</groupId>
+   
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.intranda.goobi.plugins.opac</groupId>
 	<artifactId>goobi-plugin-opac-json</artifactId>
-	<version>1.0.0</version>
-	<properties>
-		<jar.name>plugin_intranda_opac_json</jar.name>
-		<dest.folder>/opt/digiverso/goobi/plugins/opac/</dest.folder>
-	</properties>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <properties>
+        <goobi.pluginversion>1.0.0</goobi.pluginversion>
+        <jar.name>plugin_intranda_opac_json</jar.name>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+    <url>http://maven.apache.org</url>
     <distributionManagement>
         <repository>
             <id>intranda-releases</id>
@@ -18,52 +24,34 @@
             <id>intranda-public</id>
             <url>https://nexus.intranda.com/repository/maven-public</url>
         </repository>
-	</repositories>
-	<build>
-		<finalName>${jar.name}</finalName>
-		<sourceDirectory>src/main/java</sourceDirectory>
-		<testSourceDirectory>src/test/java</testSourceDirectory>
-		<resources>
-			<resource>
-				<directory>src/main/java</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12.4</version>
-<configuration><skipTests>true</skipTests></configuration>
-			</plugin>
-			</plugins>
-	</build>
-	
+    </repositories>
+    
+    <modules>
+        <module>module-gui</module>
+        <module>module-main</module>
+    </modules>    
+
 	<dependencies>
-     <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.4</version>
-            <scope>provided</scope>
-        </dependency>      
 		<dependency>
 			<groupId>de.intranda.goobi.workflow</groupId>
 			<artifactId>goobi-core-jar</artifactId>
-			<version>3.0.49</version>
+			<version>3.0.51</version>
 		</dependency>
-
-<!-- https://mvnrepository.com/artifact/org.easymock/easymock -->
+		<!-- https://mvnrepository.com/artifact/junit/junit -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.4</version>
+			<scope>provided</scope>
+		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.easymock/easymock -->
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
@@ -84,12 +72,5 @@
             <version>1.7.4</version>
             <scope>test</scope>
         </dependency>
-		<!-- https://mvnrepository.com/artifact/junit/junit -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    </dependencies>
 </project>

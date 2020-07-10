@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
@@ -22,6 +23,11 @@ public class Config {
 
     private String username;
     private String password;
+    private String loginUrl;
+    private String sessionid;
+    private String headerParameter;
+
+    private List<SearchField> fieldList = new ArrayList<>();
 
     /**
      * loads the &lt;config&gt; block from xml file
@@ -44,7 +50,9 @@ public class Config {
         for (HierarchicalConfiguration metadataType : metadataList) {
             MetadataField type = new MetadataField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@regularExpression", null), metadataType.getString("@docType", "volume"),
-                    metadataType.getString("@validationExpression", null));
+                    metadataType.getString("@validationExpression", null), metadataType.getString("@identifier", null),
+                    metadataType.getBoolean("@followLink", false), metadataType.getString("@templateName", null),
+                    metadataType.getString("@basisUrl", null));
             metadataFieldList.add(type);
         }
 
@@ -52,13 +60,41 @@ public class Config {
         for (HierarchicalConfiguration metadataType : personList) {
             PersonField type = new PersonField(metadataType.getString("@field"), metadataType.getString("@metadata"),
                     metadataType.getString("@firstname"), metadataType.getString("@lastname"), metadataType.getString("@docType", "volume"),
-                    metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null));
+                    metadataType.getString("@regularExpression", null), metadataType.getString("@validationExpression", null),
+                    metadataType.getString("@identifier", null), metadataType.getBoolean("@followLink", false),
+                    metadataType.getString("@templateName", null), metadataType.getString("@basisUrl", null));
             personFieldList.add(type);
         }
 
         username = xmlConfig.getString("/authentication/username", null);
         password = xmlConfig.getString("/authentication/password", null);
+        loginUrl = xmlConfig.getString("/authentication/loginUrl", null);
+        sessionid = xmlConfig.getString("/authentication/sessionid", null);
+        headerParameter = xmlConfig.getString("/authentication/headerParameter", null);
 
+        List<HierarchicalConfiguration> fields = xmlConfig.configurationsAt("/field");
+        for (HierarchicalConfiguration field : fields) {
+
+            SearchField searchField = new SearchField();
+
+            searchField.setId(field.getString("@id"));
+
+            searchField.setLabel(field.getString("/label", null));
+
+            searchField.setType(field.getString("/type", "text"));
+
+            String[] array = field.getStringArray("/select");
+            if (array.length > 0) {
+                List<String> selection = Arrays.asList(array);
+                searchField.setSelectList(selection);
+                searchField.setSelectedField(selection.get(0));
+            }
+            searchField.setText(field.getString("/defaultText", ""));
+
+            searchField.setUrl(field.getString("/url", null));
+
+            fieldList.add(searchField);
+        }
 
     }
 
@@ -84,6 +120,15 @@ public class Config {
         private String docType;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
+        // search for identifier value
+        private String identifier;
+        // follow the link in metadata value
+        private boolean followLink;
+        // use this template for metadata linked metadata
+        private String templateName;
+        // basis url for new request
+        private String basisUrl;
+
     }
 
     @Data
@@ -103,6 +148,37 @@ public class Config {
         private String manipulateRegularExpression;
         // check if regular expression matches with actual value
         private String validateRegularExpression;
+        // search for identifier value
+        private String identifier;
+        // follow the link in metadata value
+        private boolean followLink;
+        // use this template for metadata linked metadata
+        private String templateName;
+        // basis url for new request
+        private String basisUrl;
 
+    }
+
+    @Data
+    public class SearchField {
+
+        private String id;
+
+        // displayed label
+        private String label;
+
+        // type of the field, implemented are text, select and select+text
+        private String type;
+
+        // list of possible values
+        private List<String> selectList;
+
+        // value of the selected field
+        private String selectedField;
+
+        // entered text, gets filled with default value
+        private String text;
+
+        private String url;
     }
 }

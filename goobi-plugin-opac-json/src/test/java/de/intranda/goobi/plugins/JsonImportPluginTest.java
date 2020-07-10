@@ -156,7 +156,7 @@ public class JsonImportPluginTest {
     public void testConfiguration() {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
-        Config config = plugin.getConfig();
+        Config config = plugin.getConfig("template");
         assertEquals("Monograph", config.getDefaultPublicationType());
     }
 

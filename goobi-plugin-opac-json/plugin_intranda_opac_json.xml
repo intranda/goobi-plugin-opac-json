@@ -1,10 +1,16 @@
 ﻿<config_plugin>
 	<config>
 
+        <project>*</project>
+
         <authentication>
             <username></username>
             <password></password>
+            <loginUrl></loginUrl>
+            <sessionid></sessionid>
+            <headerParameter></headerParameter>
         </authentication>
+
 		<!-- Syntax: https://github.com/json-path/JsonPath#path-examples -->
 
 		<!-- check if "recordType": "archival_object" exists -->
@@ -62,6 +68,25 @@
 			validationExpression="/^\w+?\, \w+?\. .+$/" regularExpression="s/^(\w+?)\, (\w+?)\. .+$/$1\, $2/g" />
 		<person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
 			validationExpression="/^\w+?\, \w+?\.?$/" />
-
+            
+        <metadata metadata="Subject"  field="$.subjects[*].ref"  followLink="true" templateName="Subject" basisUrl="http://example.com" />
 	</config>
+    
+    
+    
+    <config>
+        <template>Collection</template>
+        <metadata metadata="singleDigCollection" field="$.title"  />
+    </config>
+
+    <config>
+        <template>Subject</template>
+        <metadata metadata="Subject" field="$.title" identifier="$.uri"/>
+    </config>
+
+    <config>
+        <template>Person</template>
+        <person metadata="Author" field="$.title" firstname="s/^(.*?)\,(.*?)\,.*/$2/g" lastname="s/^(.*?)\,(.*?)\,.*$/$1/g" 
+         identifier="$.uri"/>
+    </config>
 </config_plugin>
