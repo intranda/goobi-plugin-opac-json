@@ -20,7 +20,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import de.intranda.goobi.plugins.util.Config;
 import de.sub.goobi.config.ConfigPlugins;
-import de.sub.goobi.helper.HttpClientHelper;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import ugh.dl.DocStruct;
 import ugh.dl.Fileformat;
@@ -29,7 +28,7 @@ import ugh.dl.Person;
 import ugh.dl.Prefs;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ ConfigPlugins.class, HttpClientHelper.class })
+@PrepareForTest({ ConfigPlugins.class, JsonOpacPlugin.class })
 @PowerMockIgnore({ "javax.management.*", "javax.net.ssl.*" })
 public class JsonImportPluginTest {
 
@@ -42,26 +41,26 @@ public class JsonImportPluginTest {
     @Before
     public void setUp() throws Exception {
         config = getConfig();
-        //        String jsonResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/ils/39002098971741_7748458.json")), StandardCharsets.UTF_8);
-        String jsonArchiveResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/aspace/304086.json")), StandardCharsets.UTF_8);
+
+        String jsonArchiveResponse = new String(Files.readAllBytes(Paths.get("src/test/resources/archive.json")), StandardCharsets.UTF_8);
 
         String jsonMultiVolumeBibResponse =
-                new String(Files.readAllBytes(Paths.get("src/test/resources/ils/39002098971741_7748458.json")), StandardCharsets.UTF_8);
+                new String(Files.readAllBytes(Paths.get("src/test/resources/multivolume.json")), StandardCharsets.UTF_8);
 
         String jsonMonographBibResponse =
-                new String(Files.readAllBytes(Paths.get("src/test/resources/ils/39002104686564_9869346.json")), StandardCharsets.UTF_8);
+                new String(Files.readAllBytes(Paths.get("src/test/resources/monograph.json")), StandardCharsets.UTF_8);
 
         PowerMock.mockStatic(ConfigPlugins.class);
-        PowerMock.mockStatic(HttpClientHelper.class);
+        PowerMock.mockStatic(JsonOpacPlugin.class);
         EasyMock.expect(ConfigPlugins.getPluginConfig(EasyMock.anyString())).andReturn(config).anyTimes();
 
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("https://files.intranda.com/304086")).andReturn(jsonArchiveResponse).anyTimes();
+        EasyMock.expect(JsonOpacPlugin.getStringFromUrl("https://files.intranda.com/1234", null, null, null, null)).andReturn(jsonArchiveResponse).anyTimes();
 
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("https://files.intranda.com/7748458")).andReturn(jsonMultiVolumeBibResponse).anyTimes();
+        EasyMock.expect(JsonOpacPlugin.getStringFromUrl("https://files.intranda.com/666_123", null, null, null, null)).andReturn(jsonMultiVolumeBibResponse).anyTimes();
 
-        EasyMock.expect(HttpClientHelper.getStringFromUrl("https://files.intranda.com/9869346")).andReturn(jsonMonographBibResponse).anyTimes();
+        EasyMock.expect(JsonOpacPlugin.getStringFromUrl("https://files.intranda.com/333", null, null, null, null)).andReturn(jsonMonographBibResponse).anyTimes();
 
-        PowerMock.replay(HttpClientHelper.class);
+        PowerMock.replay(JsonOpacPlugin.class);
         PowerMock.replay(ConfigPlugins.class);
 
         archive = new ConfigOpacCatalogue("", "", "https://files.intranda.com/", "", "iktlist", 80, "utf-8", "", null, "json", null, null);
@@ -80,7 +79,7 @@ public class JsonImportPluginTest {
     public void testSearchVolumeBibRecord() throws Exception {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
-        Fileformat ff = plugin.search("", "7748458", archive, prefs);
+        Fileformat ff = plugin.search("", "666_123", archive, prefs);
         DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
         assertNotNull(logical);
         assertEquals("MultiVolumeWork", logical.getType().getName());
@@ -93,28 +92,21 @@ public class JsonImportPluginTest {
         // check anchor metadata
         for (Metadata md : anchor.getAllMetadata()) {
             if (md.getType().getName().equals("CatalogIDDigital")) {
-                assertEquals("7748458", md.getValue());
+                assertEquals("666", md.getValue());
             } else if (md.getType().getName().equals("TitleDocMain")) {
-                assertEquals("Jane Wodening and Stan Brakhage scrapbooks, 1958-1967", md.getValue());
+                assertEquals("Jane Doe and John Doe scrapbooks, 1958-1967", md.getValue());
             }
         }
 
         // check volume metadata
         for (Metadata md : logical.getAllMetadata()) {
             if (md.getType().getName().equals("CatalogIDDigital")) {
-                assertEquals("8246360", md.getValue());
+                assertEquals("456", md.getValue());
             } else if (md.getType().getName().equals("shelfmarksource")) {
                 assertEquals("229 YCAL MSS", md.getValue());
             } else if (md.getType().getName().equals("TitleDocMain")) {
-                assertEquals("Jane Wodening and Stan Brakhage scrapbooks", md.getValue());
+                assertEquals("Jane Doe and John Doe scrapbooks", md.getValue());
             }
-            //            else if (md.getType().getName().equals("OtherTitle")) {
-            //                System.out.println(md.getValue());
-            //            }
-        }
-
-        for (Person person : logical.getAllPersons()) {
-            System.out.println(person.getFirstname() + " " + person.getLastname());
         }
     }
 
@@ -124,16 +116,10 @@ public class JsonImportPluginTest {
     public void testSearchMonographBibRecord() throws Exception {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
-        Fileformat ff = plugin.search("", "9869346", archive, prefs);
+        Fileformat ff = plugin.search("", "333", archive, prefs);
         DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
         assertNotNull(logical);
         assertEquals("Monograph", logical.getType().getName());
-
-
-        for (Metadata md : logical.getAllMetadata()) {
-            System.out.println(md.getType().getName() + ": " + md.getValue());
-        }
-
     }
 
 
@@ -141,15 +127,15 @@ public class JsonImportPluginTest {
     public void testSearchArchiveRecord() throws Exception {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
-        Fileformat ff = plugin.search("", "304086", archive, prefs);
+        Fileformat ff = plugin.search("", "1234", archive, prefs);
         DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
         assertNotNull(logical);
 
-        assertEquals("304086", logical.getAllMetadata().get(0).getValue());
+        assertEquals("1234", logical.getAllMetadata().get(0).getValue());
 
         Person p = logical.getAllPersons().get(0);
-        assertEquals("George", p.getFirstname());
-        assertEquals("Eliot", p.getLastname());
+        assertEquals("Jane", p.getFirstname());
+        assertEquals("Doe", p.getLastname());
     }
 
     @Test

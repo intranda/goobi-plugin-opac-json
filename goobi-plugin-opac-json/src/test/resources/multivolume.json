@@ -1,0 +1,84 @@
+{
+	"source": "opac name",
+	"recordType": "bib",
+	"uri": "/abc/def/666",
+	"identifierShelfMark": "666 fixture",
+	"creator": [
+		"Doe, Jane, 1936-"
+	],
+	"title": [
+		"Jane Doe and John Doe scrapbooks"
+	],
+	"alternativeTitle": [
+		"",
+		"alternative title",
+		"",
+		"",
+		"",
+		"",
+		""
+	],
+	"extent": [
+		"3 v."
+	],
+	"language": [
+		"en"
+	],
+	"description": [
+		"Jane Doe (1936-), writer.",
+		"John Doe (1933-2003), filmmaker.",
+		"In English."
+	],
+	"subjectName": [
+		"Doe, John.",
+		"Doe family.",
+		"Doe, Jane, 1931-",
+		"Doe, Jane."
+	],
+	"subjectTopic": [
+		"American literature",
+		"Art, Modern",
+		"Avant-garde (Aesthetics)"
+	],
+	"genre": [
+		"Clippings (information artifacts)",
+		"Collage (visual work)",
+		"Motion pictures (visual work)",
+		"Photographic prints",
+		"Printed ephemera",
+		"Scrapbooks"
+	],
+	"orbisBibId": "666",
+	"importUrl": "http://example.com/abc",
+	"dateStructured": "1958196",
+	"illustrativeMatter": "            ",
+	"subjectEra": "20th century. 20th century.",
+	"titleStatement": [
+		"Jane Doe and John Doe scrapbooks, 1958-1967"
+	],
+	"contributor": [
+		"Doe, John. http://id.loc.gov/authorities/names/n00085230",
+		"Doe, Jane, 1926-2005."
+	],
+	"bibId": 666,
+	"holdingCount": 1,
+	"children": [
+		{
+			"source": "ils",
+			"recordType": "holding",
+			"uri": "/ils/holding/123",
+			"bibCount": 1,
+			"itemCount": 3,
+			"children": [
+				{
+					"source": "ils",
+					"recordType": "item",
+					"uri": "/ils/item/456",
+					"itemId": 456,
+					"sequenceNumber": 1,
+					"children": []
+				}
+			]
+		}
+	]
+}

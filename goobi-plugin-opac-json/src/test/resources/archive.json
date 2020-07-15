@@ -1,0 +1,50 @@
+{
+	"source": "archive catalogue",
+	"recordType": "archival_object",
+	"uri": "/aspace/repositories/11/archival_objects/1234",
+	"identifier": "/aspace/repositories/11/archival_objects/1234",
+	"localRecordNumber": "1234",
+	"containerGrouping": "Box 1",
+	"creator": [
+		"John Doe, 1819-1880"
+	],
+	"title": [
+		"Fixture"
+	],
+	"date": "1859 Oct 10",
+	"extent": [
+		"10.5 linear_feet"
+	],
+	"language": [
+		"eng"
+	],
+	"description": [
+		"Long fixture, including some special; character´s!"
+	],
+	"rights": [
+		"https://creativecommons.org/licenses/by-sa/4.0/",
+		"The materials are open for research."
+	],
+	"orbisBibId": "1234",
+	"orbisBarcode": "1234567890",
+	"resourceType": "mixed_materials",
+	"contributor": [
+		"Doe, Jane, 1817-1878"
+	],
+	"ancestorTitles": [
+		"old title, 1799-1872",
+		"older title",
+		"oldest title"
+	],
+	"ancestorIdentifiers": [
+		"/aspace/repositories/11/archival_objects/9876",
+		"/aspace/repositories/11/archival_objects/5432",
+		"/aspace/repositories/11/resources/10"
+	],
+	"createdBeginDate": [
+		"1859-10-10"
+	],
+	"createdEndDate": [],
+	"children": [],
+	"abstract": "additional text"
+}

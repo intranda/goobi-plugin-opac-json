@@ -1,0 +1,31 @@
+﻿<config_plugin>
+	<config>
+	
+    <project>*</project>
+    <template>*</template>
+    
+        <recordType field="[?(@.recordType=='archival_object')]" docType="Monograph" />
+        <recordType field="$.children[?(@.itemCount &gt; 1)]"  docType="Volume" anchorType="MultiVolumeWork" />
+        <recordType field="$.children[?(@.itemCount == 1)]" docType="Monograph" />
+
+       <defaultPublicationType>Monograph</defaultPublicationType>
+
+
+         <!-- metadata for archive json -->
+		<metadata metadata="CatalogIDDigital" field="$.identifier" regularExpression="s/\/aspace\/repositories\/11\/archival_objects\/(.+)/$1/g" docType="volume"  />			
+
+        <person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g"/>
+
+       <metadata metadata="CatalogIDDigital" field="$.children[?(@.itemCount > 1)].children[0].itemId" docType="volume"  />			
+       <metadata metadata="CatalogIDDigital" field="$.uri" regularExpression="s/\/abc\/def\/(.+)/$1/g" docType="anchor"  />      
+
+       <metadata metadata="TitleDocMain" field="$.title" docType="volume" />  
+     
+       <metadata metadata="TitleDocMain" field="$.titleStatement" docType="anchor" />  
+
+        <person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" 
+        validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g"/>
+
+    </config>
+</config_plugin>

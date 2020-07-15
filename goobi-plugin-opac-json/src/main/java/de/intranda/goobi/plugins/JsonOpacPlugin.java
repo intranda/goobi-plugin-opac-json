@@ -63,15 +63,6 @@ import ugh.fileformats.mets.MetsMods;
 @Log4j2
 public class JsonOpacPlugin implements IOpacPlugin {
 
-    /**
-     * archiv: 304086 multivolume: 7748458 monograpgh: 9869346
-     * 
-     * <catalogue title="json opac test">
-     * <config description="json" address="https://files.intranda.com/" port="80" database="1.65" iktlist="IKTLIST-GBV.xml" ucnf="XPNOFF=1" opacType=
-     * "intranda_opac_json" /> </catalogue>
-     * 
-     */
-
     private Perl5Util perlUtil = new Perl5Util();
 
     @Getter
@@ -156,7 +147,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
             }
         }
         if (StringUtils.isBlank(url)) {
-            url = coc.getAddress();
+            url = coc.getAddress() + inSuchbegriff;
         }
         // replace variables in url
         for (SearchField sf : config.getFieldList()) {
@@ -564,7 +555,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return response;
     }
 
-    private static String getStringFromUrl(String url, String username, String password, String headerParam, String headerParamValue) {
+    static String getStringFromUrl(String url, String username, String password, String headerParam, String headerParamValue) {
         String response = "";
         CloseableHttpClient client = null;
         HttpGet method = new HttpGet(url);

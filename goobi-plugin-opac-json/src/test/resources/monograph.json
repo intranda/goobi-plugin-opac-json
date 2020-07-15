@@ -1,0 +1,52 @@
+{
+	"source": "opac",
+	"recordType": "bib",
+	"uri": "/ab/def/999",
+	"identifierShelfMark": "shelfmark",
+	"title": [
+		"Title"
+	],
+	"publicationPlace": [
+		"Publication place"
+	],
+	"date": "6 June 1666",
+	"extent": [
+		"i + ff. 78 + ix : paper and parchment ; 230 x 170 mm."
+	],
+	"language": [
+		"it"
+	],
+	"description": [
+		"Painting.",
+		"In Italian."
+	],
+	"subjectName": [
+		"Jerome, Saint, -419 or 420."
+	],
+	"format": "unspecified",
+	"orbisBibId": "999",
+	"bibId": 999,
+	"holdingCount": 1,
+	"children": [
+		{
+			"recordType": "holding",
+			"uri": "/abc/def/holdingid",
+			"normalizedCallNo": "Shelfmark",
+			"displayCallNo": "Shelfmark",
+			"bibCount": 1,
+			"itemCount": 1,
+			"children": [
+				{
+					"source": "opac",
+					"recordType": "item",
+					"uri": "/abc/def/itemid",
+					"itemId": 333,
+					"barcode": "1234567890",
+					"copyNumber": 0,
+					"sequenceNumber": 1,
+					"children": []
+				}
+			]
+		}
+	]
+}
