@@ -10,7 +10,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.commons.configuration.tree.xpath.XPathExpressionEngine;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.NameValuePair;
@@ -45,6 +44,7 @@ import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import de.unigoettingen.sub.search.opac.ConfigOpacDoctype;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONArray;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
@@ -78,8 +78,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
     protected String atstsl;
     protected ConfigOpacCatalogue coc;
 
-    private String templateName;
-    private String projectName;
+    @Setter
+    private String opacName;
 
     private String sessionId = null;
 
@@ -87,8 +87,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-        xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
-        xmlConfig.setListDelimiter(',');
         SubnodeConfiguration myconfig = null;
         try {
             myconfig = xmlConfig.configurationAt("//config[./template='" + templateName + "']");
@@ -99,22 +97,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return config;
     }
 
-    public Config getConfigForProject() {
+    public Config getConfigForOpac() {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-        xmlConfig.setReloadingStrategy(new FileChangedReloadingStrategy());
-        xmlConfig.setListDelimiter(',');
         SubnodeConfiguration myconfig = null;
         try {
-            myconfig = xmlConfig.configurationAt("//config[./project='" + projectName + "']");
+            myconfig = xmlConfig.configurationAt("//config[@name='" + opacName + "']");
         } catch (IllegalArgumentException e) {
-            myconfig = xmlConfig.configurationAt("//config[./project='*']");
+            myconfig = xmlConfig.configurationAt("//config[not(@name)]");
         }
         Config config = new Config(myconfig);
 
         return config;
-
     }
 
     @Override
@@ -122,7 +117,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         this.coc = coc;
 
         if (config == null) {
-            config = getConfigForProject();
+            config = getConfigForOpac();
         }
         Fileformat fileformat = null;
         String url = null;
@@ -262,7 +257,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         String stringValue = getValueAsString(value);
                         String normdata = null;
                         if (pf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
+                            normdata = getValueAsString(JsonPath.read(document,
+                                    pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                         }
                         addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                     }
@@ -270,7 +266,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     String stringValue = getValueAsString(object);
                     String normdata = null;
                     if (pf.getIdentifier() != null) {
-                        normdata = getValueAsString(JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
+                        normdata = getValueAsString(
+                                JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                     }
                     addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                 }
@@ -290,7 +287,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         String stringValue = getValueAsString(value);
                         String normdata = null;
                         if (mf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
+                            normdata = getValueAsString(JsonPath.read(document,
+                                    mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                         }
                         addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
@@ -298,7 +296,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     String stringValue = getValueAsString(object);
                     String normdata = null;
                     if (mf.getIdentifier() != null) {
-                        normdata = getValueAsString(JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"","\\\""))));
+                        normdata = getValueAsString(
+                                JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                     }
                     addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                 }
@@ -514,11 +513,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return gattung;
     }
 
-    @Override
-    public void setTemplateName(String templateName) {
-        this.templateName = templateName;
-    }
-
     private static String login(String password, String... parameter) {
         String response = "";
         CloseableHttpClient client = null;
@@ -593,24 +587,41 @@ public class JsonOpacPlugin implements IOpacPlugin {
     }
 
     @Override
-    public void setProjectName(String projectName) {
-        this.projectName = projectName;
-    }
-
-    @Override
     public String getGui() {
         return "/uii/jsonOpacPlugin.xhtml";
-        //        return "/uii/includes/process/process_new_opac.xhtml";
     }
 
     public List<SearchField> getSearchFieldList() {
-        if (config == null) {
-            config = getConfigForProject();
+        if (config==null) {
+            config =getConfigForOpac();
         }
         return config.getFieldList();
     }
 
     public int getSizeOfSearchFieldList() {
         return getSearchFieldList().size();
+    }
+
+    @Override
+    public List<ConfigOpacCatalogue> getOpacConfiguration(String title) {
+        List<ConfigOpacCatalogue> answer = new ArrayList<>();
+        XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(getTitle());
+        xmlConfig.setExpressionEngine(new XPathExpressionEngine());
+        String[] names = xmlConfig.getStringArray("/config/@name");
+        ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(title);
+        coc.setOpacPlugin(this);
+        if (names == null || names.length == 0) {
+            answer.add(coc);
+        } else {
+            for (String catalogueName : names) {
+                coc = ConfigOpac.getInstance().getCatalogueByName(title);
+                coc.setTitle(catalogueName);
+                JsonOpacPlugin plugin = new JsonOpacPlugin();
+                coc.setOpacPlugin(plugin);
+                plugin.setOpacName(catalogueName);
+                answer.add(coc);
+            }
+        }
+        return answer;
     }
 }

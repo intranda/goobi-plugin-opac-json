@@ -1,5 +1,5 @@
 ﻿<config_plugin>
-	<config>
+	<config name="example library">
 	
     <project>*</project>
     <template>*</template>
