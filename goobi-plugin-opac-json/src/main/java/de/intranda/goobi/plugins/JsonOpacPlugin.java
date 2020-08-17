@@ -141,7 +141,15 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     break;
             }
         }
-        if (StringUtils.isBlank(url)) {
+        // plugin is called from another plugin
+        if (StringUtils.isBlank(url) && StringUtils.isNotBlank(inSuchfeld)) {
+            for (SearchField sf : config.getFieldList()) {
+                if (sf.getId().equals(inSuchfeld)) {
+                    url = sf.getUrl().replace("{" + sf.getId() + ".text}", inSuchbegriff);
+                }
+            }
+
+        } else if (StringUtils.isBlank(url)) {
             url = coc.getAddress() + inSuchbegriff;
         }
         // replace variables in url
@@ -592,8 +600,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
     }
 
     public List<SearchField> getSearchFieldList() {
-        if (config==null) {
-            config =getConfigForOpac();
+        if (config == null) {
+            config = getConfigForOpac();
         }
         return config.getFieldList();
     }
