@@ -1,92 +1,85 @@
 ﻿<config_plugin>
-	<config>
+	<config name="Opac Name">
 
-        <project>*</project>
+		<field id="repository">
+			<label>Repository</label>
+			<select>1</select>
+			<select>2</select>
+			<select>3</select>
+			<type>select</type>
+			<defaultText>1</defaultText>
+			<url></url>
+		</field>
 
-        <authentication>
-            <username></username>
-            <password></password>
-            <loginUrl></loginUrl>
-            <sessionid></sessionid>
-            <headerParameter></headerParameter>
-        </authentication>
+		<field id="id">
+			<label>Identifier</label>
+			<type>text</type>
+			<defaultText></defaultText>
+			<url></url>
+		</field>
 
-		<!-- Syntax: https://github.com/json-path/JsonPath#path-examples -->
+		<field id="type">
+			<label></label>
+			<type>select+text</type>
+			<select>barcode</select>
+			<select>holding</select>
+			<select>item</select>
+			<defaultText></defaultText>
+			<url>https://example.com/repository/{repository.select}/}{type.select}/{type.text}?id={id.text}</url>
+		</field>
 
-		<!-- check if "recordType": "archival_object" exists -->
-		<recordType field="[?(@.recordType=='archival_object')]" docType="Monograph" />
-		<recordType field="$.children[?(@.itemCount &gt; 1)]" docType="Volume" anchorType="MultiVolumeWork" />
-		<recordType field="$.children[?(@.itemCount == 1)]" docType="Monograph" />
+		<authentication>
+			<username>user</username>
+			<password>password</password>
+		</authentication>
 
-		<!-- default publication type if it cannot be detected. If missing or empty, no record will be created -->
 		<defaultPublicationType>Monograph</defaultPublicationType>
 
-		<!-- metadata : name of the field in ruleset field: path to the field regularExpression: regex to manipulate the value docType: volume or anchor -->
-		<!-- metadata for archive json -->
-		<metadata metadata="CatalogIDDigital" field="$.identifier" regularExpression="s/\/aspace\/repositories\/11\/archival_objects\/(.+)/$1/g"
-			docType="volume" />
 		<metadata metadata="PublicationYear" field="$.date" />
 		<metadata metadata="DocLanguage" field="$.language" />
-		<!-- cut 'Eliot, George, 1819-1880' into first- and last name -->
-		<person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g" />
-		<person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^\w+?\, \w+?\. .+$/" regularExpression="s/^(\w+?)\, (\w+?)\. .+$/$1\, $2/g" />
-		<person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^\w+?\, \w+?\.?$/" />
-
-		<!-- metadata for ils bib json -->
+		<metadata metadata="CatalogIDDigital" field="$.identifier" docType="volume" />
 		<metadata metadata="CatalogIDDigital" field="$.children[?(@.itemCount > 1)].children[0].itemId" docType="volume" />
-		<metadata metadata="CatalogIDDigital" field="$.uri" regularExpression="s/\/ils\/bib\/(.+)/$1/g" docType="anchor" />
-
-		<!-- 
-		<metadata metadata="TitleDocMain" field="concat( $.title[0]\,&quot; &quot;\,$.children[0].children[0].sequenceNumber)" docType="volume" /> 
-		-->
-
-		<metadata metadata="TitleDocMain" field="$.title" docType="volume" />
-		<metadata metadata="TitleDocMain" field="$.titleStatement" docType="anchor" />
-		<metadata metadata="OtherTitle" field="$.alternativeTitle" docType="volume" />
-		<metadata metadata="PlaceOfPublication" field="$.publicationPlace" docType="volume" />
-		<metadata metadata="PublicationYear" field="$.date" docType="volume" />
-		<metadata metadata="physicalDescriptionExtent" field="$.extent" docType="volume" />
-		<metadata metadata="DocLanguage" field="$.language" docType="volume" />
-		<metadata metadata="Description" field="$.description" docType="volume" />
+		<metadata metadata="CatalogIDDigital" field="$.uri" regularExpression="s/\/some-prefix\/(.+)/$1/g" docType="anchor" />
 		<metadata metadata="shelfmarksource" field="$.identifierShelfMark" docType="volume" />
-
-		<!-- "subjectName": create new metadata/person with role other? -->
-		<metadata metadata="SubjectTopic" field="$.subjectTopic" docType="volume" />
-		<metadata metadata="SubjectForm" field="$.genre" docType="volume" />
-
-		<metadata metadata="Resource" field="$.references" docType="volume" />
-		<metadata metadata="Provenience" field="$.provenanceUncontrolled" docType="volume" />
+		<metadata metadata="TitleDocMain" field="$.title" docType="volume" />
+		<metadata metadata="OtherTitle" field="$.alternativeTitle" docType="volume" />
 		<metadata metadata="CurrentNo" field="$..children[0].children[0].sequenceNumber" docType="volume" />
 		<metadata metadata="CurrentNoSorting" field="$..children[0].children[0].sequenceNumber" docType="volume" />
 
-		<person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g" />
-		<person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^\w+?\, \w+?\. .+$/" regularExpression="s/^(\w+?)\, (\w+?)\. .+$/$1\, $2/g" />
-		<person metadata="Author" field="contributor" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g"
-			validationExpression="/^\w+?\, \w+?\.?$/" />
-            
-        <metadata metadata="Subject"  field="$.subjects[*].ref"  followLink="true" templateName="Subject" basisUrl="http://example.com" />
+		<person metadata="Author" field="creator" firstname="s/^(.+?)\, (.+?)$/$2/g" lastname="s/^(.+?)\, (.+?)$/$1/g" validationExpression="/^.+?\, .+?\, .+$/" regularExpression="s/^(.+?)\, (.+?)\, .+/$1\, $2/g"/>
 	</config>
-    
-    
-    
-    <config>
-        <template>Collection</template>
-        <metadata metadata="singleDigCollection" field="$.title"  />
-    </config>
 
-    <config>
-        <template>Subject</template>
-        <metadata metadata="Subject" field="$.title" identifier="$.uri"/>
-    </config>
+	<config>
+		<field id="id">
+			<label>Identifier</label>
+			<type>text</type>
+			<defaultText></defaultText>
+			<url>http://example.com/repositories/2/archival_objects/{id.text}</url>
+		</field>
+		<authentication>
+			<username>user</username>
+			<password>password</password>
+			<loginUrl>http://example.com/users/{username}/login</loginUrl>
+			<sessionid>session</sessionid>
+			<headerParameter>Token</headerParameter>
+		</authentication>
+		<recordType field="[?(@.jsonmodel_type=='archival_object')]" docType="ArchivalObject" />
+		<metadata metadata="TitleDocMain" field="$.title" />
 
-    <config>
-        <template>Person</template>
-        <person metadata="Author" field="$.title" firstname="s/^(.*?)\,(.*?)\,.*/$2/g" lastname="s/^(.*?)\,(.*?)\,.*$/$1/g" 
-         identifier="$.uri"/>
-    </config>
+		<metadata metadata="PublicationStart" field="$.dates.begin" />
+		<metadata metadata="PublicationEnd" field="$.dates.end" />
+		<metadata metadata="PublicationRun" field="$.dates.expression" />
+		<person metadata="Author" field="$.linked_agents[?(@.role=='creator')].ref" followLink="true" templateName="Person" basisUrl="http://example.com"/>
+		<metadata metadata="DocLanguage" field="$.notes[?(@.type=='langmaterial')].content[*]" />
+		<metadata metadata="Note" field="$.notes[?(@.label=='Writing')].subnotes[*].content" />
+		<metadata metadata="Illustration" field="$.notes[?(@.label=='Illumination')].subnotes[*].content" />
+		<metadata metadata="Provenience" field="$.notes[?(@.type=='custodhist')].subnotes[*].content" />
+		<metadata metadata="CatalogIDDigital" field="$.uri" regularExpression="s/.*\/(.+)$/$1/" />
+	</config>
+
+
+	<config>
+		<template>Person</template>
+		<person metadata="Author" field="$.title" firstname="s/^(.*?)\,(.*?)\,.*/$2/g" lastname="s/^(.*?)\,(.*?)\,.*$/$1/g" identifier="$.uri"/>
+	</config>
 </config_plugin>
