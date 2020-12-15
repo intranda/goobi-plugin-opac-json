@@ -36,7 +36,8 @@
                         value="#{field.label}"
                         rendered="#{field.type != 'select+text'}" />
                     <h:selectOneMenu
-                        styleClass="form-control"
+                        styleClass="form-control focusable"
+                        pt:aria-label="#{field.label} #{msgs.dropdownMenu}"
                         value="#{field.selectedField}"
                         rendered="#{field.type == 'select+text'}">
                         <f:selectItems
@@ -48,7 +49,8 @@
                 </div>
                 <div class="grid-item">
                     <h:selectOneMenu
-                        styleClass="form-control"
+                        styleClass="form-control focusable"
+                        pt:aria-label="#{field.label} #{msgs.dropdownMenu}"
                         value="#{field.selectedField}"
                         rendered="#{field.type == 'select'}">
                         <f:selectItems
@@ -59,7 +61,8 @@
                     </h:selectOneMenu>
 
                     <h:inputText
-                        styleClass="form-control"
+                        styleClass="form-control focusable"
+                        pt:aria-label="#{field.label} #{msgs.inputField}"
                         value="#{field.text}"
                         rendered="#{field.type != 'select'}" />
 
