@@ -107,7 +107,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         } catch (IllegalArgumentException e) {
             myconfig = xmlConfig.configurationAt("//config[not(@name)]");
         }
-        Config config = new Config(myconfig);
+        config = new Config(myconfig);
 
         return config;
     }
