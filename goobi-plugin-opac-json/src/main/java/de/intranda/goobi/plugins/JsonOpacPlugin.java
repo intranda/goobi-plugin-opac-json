@@ -289,10 +289,20 @@ public class JsonOpacPlugin implements IOpacPlugin {
         for (MetadataField mf : config.getMetadataFieldList()) {
             try {
                 Object object = JsonPath.read(document, mf.getField());
-                if (object instanceof List) {
-                    List<?> valueList = (List) object;
-                    for (Object value : valueList) {
-                        String stringValue = getValueAsString(value);
+                if (object != null) {
+                    if (object instanceof List) {
+                        List<?> valueList = (List) object;
+                        for (Object value : valueList) {
+                            String stringValue = getValueAsString(value);
+                            String normdata = null;
+                            if (mf.getIdentifier() != null) {
+                                normdata = getValueAsString(JsonPath.read(document,
+                                        mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
+                            }
+                            addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
+                        }
+                    } else {
+                        String stringValue = getValueAsString(object);
                         String normdata = null;
                         if (mf.getIdentifier() != null) {
                             normdata = getValueAsString(JsonPath.read(document,
@@ -300,14 +310,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         }
                         addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
-                } else {
-                    String stringValue = getValueAsString(object);
-                    String normdata = null;
-                    if (mf.getIdentifier() != null) {
-                        normdata = getValueAsString(
-                                JsonPath.read(document, mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
-                    }
-                    addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                 }
             } catch (PathNotFoundException e) {
                 log.debug("Path is invalid or field could not be found ", e);
