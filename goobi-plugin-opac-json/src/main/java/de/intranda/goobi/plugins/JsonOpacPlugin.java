@@ -262,7 +262,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 if (object instanceof List) {
                     List<?> valueList = (List) object;
                     for (Object value : valueList) {
-                        String stringValue = getValueAsString(value);
+                        if (value != null) {
+                            String stringValue = getValueAsString(value);
+                            String normdata = null;
+                            if (pf.getIdentifier() != null) {
+                                normdata = getValueAsString(JsonPath.read(document,
+                                        pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
+                            }
+                            addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
+                        }
+                    }
+                } else {
+                    if (object != null) {
+                        String stringValue = getValueAsString(object);
                         String normdata = null;
                         if (pf.getIdentifier() != null) {
                             normdata = getValueAsString(JsonPath.read(document,
@@ -270,14 +282,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
                         }
                         addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                     }
-                } else {
-                    String stringValue = getValueAsString(object);
-                    String normdata = null;
-                    if (pf.getIdentifier() != null) {
-                        normdata = getValueAsString(
-                                JsonPath.read(document, pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
-                    }
-                    addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                 }
             } catch (PathNotFoundException e) {
                 log.info("Path is invalid or field could not be found ", e);
@@ -293,7 +297,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
                     if (object instanceof List) {
                         List<?> valueList = (List) object;
                         for (Object value : valueList) {
-                            String stringValue = getValueAsString(value);
+                            if (value != null) {
+                                String stringValue = getValueAsString(value);
+                                String normdata = null;
+                                if (mf.getIdentifier() != null) {
+                                    normdata = getValueAsString(JsonPath.read(document,
+                                            mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
+                                }
+                                addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
+                            }
+                        }
+                    } else {
+                        if (object != null) {
+                            String stringValue = getValueAsString(object);
                             String normdata = null;
                             if (mf.getIdentifier() != null) {
                                 normdata = getValueAsString(JsonPath.read(document,
@@ -301,14 +317,6 @@ public class JsonOpacPlugin implements IOpacPlugin {
                             }
                             addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                         }
-                    } else {
-                        String stringValue = getValueAsString(object);
-                        String normdata = null;
-                        if (mf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document,
-                                    mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
-                        }
-                        addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
                 }
             } catch (PathNotFoundException e) {
