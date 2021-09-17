@@ -83,6 +83,10 @@ public class JsonOpacPlugin implements IOpacPlugin {
 
     private String sessionId = null;
 
+    @Setter
+    @Getter
+    private String workflowTitle;
+
     public Config getConfig(String templateName) {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
@@ -103,10 +107,19 @@ public class JsonOpacPlugin implements IOpacPlugin {
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
         SubnodeConfiguration myconfig = null;
         try {
-            myconfig = xmlConfig.configurationAt("//config[@name='" + opacName + "']");
+            myconfig = xmlConfig.configurationAt("//config[workflow='" + workflowTitle + "'][@name='" + opacName + "']");
         } catch (IllegalArgumentException e) {
-            myconfig = xmlConfig.configurationAt("//config[not(@name)]");
+            try {
+                myconfig = xmlConfig.configurationAt("//config[workflow='" + workflowTitle + "'][not(@name)]");
+            } catch (IllegalArgumentException e1) {
+                try {
+                    myconfig = xmlConfig.configurationAt("//config[not(workflow)][@name='" + opacName + "']");
+                } catch (IllegalArgumentException e2) {
+                    myconfig = xmlConfig.configurationAt("//config[not(workflow)][not(@name)]");
+                }
+            }
         }
+
         config = new Config(myconfig);
 
         return config;
@@ -621,11 +634,21 @@ public class JsonOpacPlugin implements IOpacPlugin {
     }
 
     @Override
-    public List<ConfigOpacCatalogue> getOpacConfiguration(String title) {
+    public List<ConfigOpacCatalogue> getOpacConfiguration(String workflowName, String title) {
         List<ConfigOpacCatalogue> answer = new ArrayList<>();
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(getTitle());
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
-        String[] names = xmlConfig.getStringArray("/config/@name");
+        String xpath = "";
+        String[] names = null;
+        if (StringUtils.isNotBlank(workflowName)) {
+            xpath = "/config[workflow='" + workflowName + "']/@name";
+            names = xmlConfig.getStringArray(xpath);
+        }
+        if (names == null || names.length == 0) {
+            xpath = "/config[not(workflow)]/@name";
+            names = xmlConfig.getStringArray(xpath);
+        }
+
         ConfigOpacCatalogue coc = ConfigOpac.getInstance().getCatalogueByName(title);
         coc.setOpacPlugin(this);
         if (names == null || names.length == 0) {
@@ -637,6 +660,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 JsonOpacPlugin plugin = new JsonOpacPlugin();
                 coc.setOpacPlugin(plugin);
                 plugin.setOpacName(catalogueName);
+                plugin.setWorkflowTitle(workflowName);
                 answer.add(coc);
             }
         }
