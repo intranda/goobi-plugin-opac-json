@@ -1,6 +1,7 @@
 package de.intranda.goobi.plugins;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,6 +29,8 @@ import org.apache.oro.text.perl.Perl5Util;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -37,6 +40,7 @@ import de.intranda.goobi.plugins.util.Config.DocumentType;
 import de.intranda.goobi.plugins.util.Config.MetadataField;
 import de.intranda.goobi.plugins.util.Config.PersonField;
 import de.intranda.goobi.plugins.util.Config.SearchField;
+import de.intranda.goobi.plugins.util.Overview;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.UghHelper;
@@ -87,6 +91,18 @@ public class JsonOpacPlugin implements IOpacPlugin {
     @Getter
     private String workflowTitle;
 
+    @Getter
+    private List<Overview> overviewList;
+
+    @Getter
+    @Setter
+    private boolean showModal = false;
+
+    @Getter
+    @Setter
+    private String selectedUrl ;
+
+
     public Config getConfig(String templateName) {
 
         XMLConfiguration xmlConfig = ConfigPlugins.getPluginConfig(title);
@@ -113,7 +129,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 myconfig = xmlConfig.configurationAt("//config[workflow='" + workflowTitle + "'][not(@name)]");
             } catch (IllegalArgumentException e1) {
                 try {
-                    myconfig = xmlConfig.configurationAt("//config[not(workflow)][@name='" + opacName + "']");
+                    myconfig = xmlConfig.configurationAt("//config[@name='" + opacName + "']");
                 } catch (IllegalArgumentException e2) {
                     myconfig = xmlConfig.configurationAt("//config[not(workflow)][not(@name)]");
                 }
@@ -132,83 +148,40 @@ public class JsonOpacPlugin implements IOpacPlugin {
         if (config == null) {
             config = getConfigForOpac();
         }
+        boolean prepareModal = false;
         Fileformat fileformat = null;
-        String url = null;
-        // find url to use
-        for (SearchField sf : config.getFieldList()) {
-            switch (sf.getType()) {
-                case "text":
-                    if (StringUtils.isNotBlank(sf.getText())) {
-                        url = sf.getUrl();
-                    }
-                    break;
-                case "select":
-                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
-                        url = sf.getUrl();
-                    }
-                    break;
-                case "select+text":
-                    if (StringUtils.isNotBlank(sf.getText()) && StringUtils.isNotBlank(sf.getSelectedField())) {
-                        url = sf.getUrl();
-                    }
-                    break;
-            }
-        }
-        // plugin is called from another plugin
-        if (StringUtils.isBlank(url) && StringUtils.isNotBlank(inSuchfeld)) {
-            for (SearchField sf : config.getFieldList()) {
-                if (sf.getId().equals(inSuchfeld)) {
-                    url = sf.getUrl().replace("{" + sf.getId() + ".text}", inSuchbegriff);
-                }
-            }
-
-        } else if (StringUtils.isBlank(url)) {
-            url = coc.getAddress() + inSuchbegriff;
-        }
-        // replace variables in url
-        for (SearchField sf : config.getFieldList()) {
-            switch (sf.getType()) {
-                case "text":
-                    if (StringUtils.isNotBlank(sf.getText())) {
-                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
-                    }
-                    break;
-                case "select":
-                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
-                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
-                    }
-                    break;
-                case "select+text":
-                    if (StringUtils.isNotBlank(sf.getText())) {
-                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
-                    }
-                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
-                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
-                    }
-
-            }
-        }
-
         String response = null;
-
-        if (config.getLoginUrl() != null) {
-            String loginUrl = config.getLoginUrl();
-            loginUrl = loginUrl.replace("{username}", config.getUsername());
-            loginUrl = loginUrl.replace("{password}", config.getPassword());
-            String login = login(config.getPassword(), loginUrl);
-            Object document = Configuration.defaultConfiguration().jsonProvider().parse(login);
-            sessionId = JsonPath.read(document, config.getSessionid());
-        }
-
-        if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
-            response = getStringFromUrl(url, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
+        if (StringUtils.isNotBlank(selectedUrl) && config.isShowResultList() ) {
+            String url = config.getAdditionalApiUrl() + selectedUrl;
+            response = search(url);
+            selectedUrl = null;
         } else {
-            response = getStringFromUrl(url, null, null, config.getHeaderParameter(), sessionId);
+            String url = prepareSearchUrl(inSuchfeld, inSuchbegriff);
+            response = search(url);
+            prepareModal = true;
         }
         if (StringUtils.isNotBlank(response)) {
             hitcount = 1;
-            Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
+            if (config.isShowResultList() && prepareModal) {
+                // prepare overview list
+                Gson gson = new Gson();
+                Type listType = new TypeToken<ArrayList<Overview>>() {
+                }.getType();
+                overviewList = gson.fromJson(response, listType);
+                hitcount = 1;
 
+
+                if (overviewList.size()> 1) {
+                    showModal = true;
+                    return null;
+                } else {
+                    // if only one record is available: don't show modal and continue
+                    String url = config.getAdditionalApiUrl() + overviewList.get(0).getUri();
+                    response = search(url);
+                }
+            }
+            showModal = false;
+            Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
             String publicationType = null;
             String anchorType = null;
             for (DocumentType documentType : config.getDocumentTypeList()) {
@@ -266,6 +239,85 @@ public class JsonOpacPlugin implements IOpacPlugin {
             hitcount = 0;
         }
         return fileformat;
+    }
+
+    private String prepareSearchUrl(String inSuchfeld, String inSuchbegriff) {
+        String url = null;
+        // find url to use
+        for (SearchField sf : config.getFieldList()) {
+            switch (sf.getType()) {
+                case "text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+                case "select":
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+                case "select+text":
+                    if (StringUtils.isNotBlank(sf.getText()) && StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = sf.getUrl();
+                    }
+                    break;
+            }
+        }
+        // plugin is called from another plugin
+        if (StringUtils.isBlank(url) && StringUtils.isNotBlank(inSuchfeld)) {
+            for (SearchField sf : config.getFieldList()) {
+                if (sf.getId().equals(inSuchfeld)) {
+                    url = sf.getUrl().replace("{" + sf.getId() + ".text}", inSuchbegriff);
+                }
+            }
+
+        } else if (StringUtils.isBlank(url)) {
+            url = coc.getAddress() + inSuchbegriff;
+        }
+        // replace variables in url
+        for (SearchField sf : config.getFieldList()) {
+            switch (sf.getType()) {
+                case "text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
+                    }
+                    break;
+                case "select":
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
+                    }
+                    break;
+                case "select+text":
+                    if (StringUtils.isNotBlank(sf.getText())) {
+                        url = url.replace("{" + sf.getId() + ".text}", sf.getText());
+                    }
+                    if (StringUtils.isNotBlank(sf.getSelectedField())) {
+                        url = url.replace("{" + sf.getId() + ".select}", sf.getSelectedField());
+                    }
+
+            }
+        }
+        return url;
+    }
+
+    private String search(String url) {
+        String response = null;
+
+        if (config.getLoginUrl() != null) {
+            String loginUrl = config.getLoginUrl();
+            loginUrl = loginUrl.replace("{username}", config.getUsername());
+            loginUrl = loginUrl.replace("{password}", config.getPassword());
+            String login = login(config.getPassword(), loginUrl);
+            Object document = Configuration.defaultConfiguration().jsonProvider().parse(login);
+            sessionId = JsonPath.read(document, config.getSessionid());
+        }
+
+        if (StringUtils.isNotBlank(config.getUsername()) && StringUtils.isNotBlank(config.getPassword()) && config.getLoginUrl() == null) {
+            response = getStringFromUrl(url, config.getUsername(), config.getPassword(), config.getHeaderParameter(), sessionId);
+        } else {
+            response = getStringFromUrl(url, null, null, config.getHeaderParameter(), sessionId);
+        }
+        return response;
     }
 
     private void parsePerson(Object document, DocStruct anchor, DocStruct logical, Prefs inPrefs, Config config) {
@@ -640,12 +692,17 @@ public class JsonOpacPlugin implements IOpacPlugin {
         xmlConfig.setExpressionEngine(new XPathExpressionEngine());
         String xpath = "";
         String[] names = null;
+
         if (StringUtils.isNotBlank(workflowName)) {
             xpath = "/config[workflow='" + workflowName + "']/@name";
             names = xmlConfig.getStringArray(xpath);
-        }
-        if (names == null || names.length == 0) {
-            xpath = "/config[not(workflow)]/@name";
+            if (names == null || names.length == 0) {
+                xpath = "/config[not(workflow)]/@name";
+                names = xmlConfig.getStringArray(xpath);
+            }
+        } else {
+            // no workflowName is set, use all
+            xpath = "/config/@name";
             names = xmlConfig.getStringArray(xpath);
         }
 
@@ -666,4 +723,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
         return answer;
     }
+
+
+
 }

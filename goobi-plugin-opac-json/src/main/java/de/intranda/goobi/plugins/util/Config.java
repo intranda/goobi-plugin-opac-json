@@ -29,6 +29,9 @@ public class Config {
 
     private List<SearchField> fieldList = new ArrayList<>();
 
+    private boolean showResultList = false;
+    private String additionalApiUrl;
+
     /**
      * loads the &lt;config&gt; block from xml file
      * 
@@ -38,7 +41,8 @@ public class Config {
     public Config(SubnodeConfiguration xmlConfig) {
 
         defaultPublicationType = xmlConfig.getString("/defaultPublicationType", null);
-
+        showResultList = xmlConfig.getBoolean("/showResultList", false);
+        additionalApiUrl =  xmlConfig.getString("/urlForSecondCall", null);
         List<HierarchicalConfiguration> recordTypeList = xmlConfig.configurationsAt("/recordType");
         for (HierarchicalConfiguration recordType : recordTypeList) {
             DocumentType type =
