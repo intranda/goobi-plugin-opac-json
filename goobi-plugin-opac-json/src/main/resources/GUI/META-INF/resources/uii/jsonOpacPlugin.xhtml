@@ -36,8 +36,32 @@ width: 100%;
 }
 
 #globalMessage {
-display: none;
+    display: none;
 }
+
+.modal-header .close {
+    color: #fff;
+    opacity: 0.5;
+}
+
+.btn-icon-green {
+    color: #fff;
+    background-color: #40bf40;
+    min-width: 25px;
+    height: 25px;
+    line-height: 25px;
+    padding: 0;
+    margin-left: 50%;
+}
+
+.entry {
+margin-left: 0;
+border: 1px solid #eee;
+padding: 5px;
+margin-right: 5px;
+
+}
+
 
 </style>
 
@@ -103,7 +127,7 @@ display: none;
                         <div class="modal-header">
                             <h5
                                 class="modal-title"
-                                id="recordListLabel">#{msgs.bitteAuswaehlen}</h5>
+                                id="recordListLabel">#{msgs.bitteAuswaehlen}
 
                             <button
                                 type="button"
@@ -114,6 +138,7 @@ display: none;
                                     value="&amp;times;"
                                     escape="false" />
                             </button>
+                            </h5>
                         </div>
                         <div class="modal-body">
 
@@ -122,9 +147,7 @@ display: none;
                                 <ui:repeat
                                     var="record"
                                     value="#{ProzesskopieForm.opacPlugin.overviewList}">
-                                    <div
-                                        class="row"
-                                        style="margin-left: 0; border: 1px solid #eee; padding: 5px;">
+                                    <div class="row entry">
                                         <div class="col-sm-11">
                                             <div class="row form-group form-horizontal form-bordered">
                                                 <div class="col-sm-3 ">
@@ -225,7 +248,7 @@ display: none;
                                             <button
                                                 jsf:id="check"
                                                 aria-label="#{msgs.selectFile}"
-                                                class="btn btn--icon-green greenCheckButton pull-right"
+                                                class="btn btn-icon-green"
                                                 jsf:action="#{ProzesskopieForm.OpacAuswerten}">
                                                 <f:setPropertyActionListener
                                                     value="#{record.uri}"

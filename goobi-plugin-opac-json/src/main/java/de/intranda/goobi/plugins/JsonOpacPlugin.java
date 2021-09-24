@@ -188,7 +188,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 try {
                     Object object = JsonPath.read(document, documentType.getField());
                     if (object instanceof List) {
-                        List<?> valueList = (List) object;
+                        List<?> valueList = (List<?>) object;
                         if (!valueList.isEmpty()) {
                             publicationType = documentType.getPublicationType();
                             anchorType = documentType.getPublicationAnchorType();
@@ -325,7 +325,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
             try {
                 Object object = JsonPath.read(document, pf.getField());
                 if (object instanceof List) {
-                    List<?> valueList = (List) object;
+                    List<?> valueList = (List<?>) object;
                     for (Object value : valueList) {
                         if (value != null) {
                             String stringValue = getValueAsString(value);
@@ -360,7 +360,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 Object object = JsonPath.read(document, mf.getField());
                 if (object != null) {
                     if (object instanceof List) {
-                        List<?> valueList = (List) object;
+                        List<?> valueList = (List<?>) object;
                         for (Object value : valueList) {
                             if (value != null) {
                                 String stringValue = getValueAsString(value);
@@ -508,6 +508,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         } else if (value instanceof Boolean) {
             return (boolean) value ? "true" : "false";
         } else if (value instanceof LinkedHashMap) {
+            @SuppressWarnings("unchecked")
             Map<String, String> map = (Map<String, String>) value;
             for (String key : map.keySet()) {
                 log.error("not mapped: " + key + ": " + map.get(key));
