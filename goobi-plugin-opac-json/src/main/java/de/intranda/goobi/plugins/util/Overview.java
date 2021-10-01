@@ -1,9 +1,11 @@
 package de.intranda.goobi.plugins.util;
 
+import org.goobi.interfaces.IOverview;
+
 import lombok.Data;
 
 @Data
-public class Overview {
+public class Overview implements IOverview {
 
     // common fields
     private String title;
@@ -22,9 +24,9 @@ public class Overview {
 
     // Archives Space fields
     private String series;
-    private String  topContainer;
-    private String  collection;
-    private String  containerGrouping;
+    private String topContainer;
+    private String collection;
+    private String containerGrouping;
     private String aspaceUri;
 
 }

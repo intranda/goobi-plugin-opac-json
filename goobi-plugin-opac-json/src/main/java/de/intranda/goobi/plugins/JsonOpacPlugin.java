@@ -26,8 +26,10 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.oro.text.perl.Perl5Util;
+import org.goobi.interfaces.IJsonPlugin;
+import org.goobi.interfaces.IOverview;
+import org.goobi.interfaces.ISearchField;
 import org.goobi.production.enums.PluginType;
-import org.goobi.production.plugin.interfaces.IOpacPlugin;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -39,7 +41,6 @@ import de.intranda.goobi.plugins.util.Config;
 import de.intranda.goobi.plugins.util.Config.DocumentType;
 import de.intranda.goobi.plugins.util.Config.MetadataField;
 import de.intranda.goobi.plugins.util.Config.PersonField;
-import de.intranda.goobi.plugins.util.Config.SearchField;
 import de.intranda.goobi.plugins.util.Overview;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.HttpClientHelper;
@@ -65,7 +66,7 @@ import ugh.fileformats.mets.MetsMods;
 
 @PluginImplementation
 @Log4j2
-public class JsonOpacPlugin implements IOpacPlugin {
+public class JsonOpacPlugin implements IJsonPlugin {
 
     private Perl5Util perlUtil = new Perl5Util();
 
@@ -92,7 +93,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
     private String workflowTitle;
 
     @Getter
-    private List<Overview> overviewList;
+    private List<IOverview> overviewList;
 
     @Getter
     @Setter
@@ -169,16 +170,16 @@ public class JsonOpacPlugin implements IOpacPlugin {
                 }.getType();
                 overviewList = gson.fromJson(response, listType);
                 hitcount = 1;
-
-
-                if (overviewList.size()> 1) {
-                    showModal = true;
-                    return null;
-                } else {
-                    // if only one record is available: don't show modal and continue
-                    String url = config.getAdditionalApiUrl() + overviewList.get(0).getUri();
-                    response = search(url);
-                }
+                showModal = true;
+                return null;
+                //                if (overviewList.size()> 1) {
+                //                    showModal = true;
+                //                    return null;
+                //                } else {
+                //                    // if only one record is available: don't show modal and continue
+                //                    String url = config.getAdditionalApiUrl() + overviewList.get(0).getUri();
+                //                    response = search(url);
+                //                }
             }
             showModal = false;
             Object document = Configuration.defaultConfiguration().jsonProvider().parse(response);
@@ -244,7 +245,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
     private String prepareSearchUrl(String inSuchfeld, String inSuchbegriff) {
         String url = null;
         // find url to use
-        for (SearchField sf : config.getFieldList()) {
+        for (ISearchField sf : config.getFieldList()) {
             switch (sf.getType()) {
                 case "text":
                     if (StringUtils.isNotBlank(sf.getText())) {
@@ -265,7 +266,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
         }
         // plugin is called from another plugin
         if (StringUtils.isBlank(url) && StringUtils.isNotBlank(inSuchfeld)) {
-            for (SearchField sf : config.getFieldList()) {
+            for (ISearchField sf : config.getFieldList()) {
                 if (sf.getId().equals(inSuchfeld)) {
                     url = sf.getUrl().replace("{" + sf.getId() + ".text}", inSuchbegriff);
                 }
@@ -275,7 +276,7 @@ public class JsonOpacPlugin implements IOpacPlugin {
             url = coc.getAddress() + inSuchbegriff;
         }
         // replace variables in url
-        for (SearchField sf : config.getFieldList()) {
+        for (ISearchField sf : config.getFieldList()) {
             switch (sf.getType()) {
                 case "text":
                     if (StringUtils.isNotBlank(sf.getText())) {
@@ -675,7 +676,8 @@ public class JsonOpacPlugin implements IOpacPlugin {
         return "/uii/jsonOpacPlugin.xhtml";
     }
 
-    public List<SearchField> getSearchFieldList() {
+    @Override
+    public List<ISearchField> getSearchFieldList() {
         if (config == null) {
             config = getConfigForOpac();
         }

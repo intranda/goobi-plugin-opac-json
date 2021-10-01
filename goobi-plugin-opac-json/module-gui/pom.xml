@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.opac</groupId>
   <artifactId>goobi-plugin-opac-json-gui</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <properties>
     <jar.name>plugin_intranda_opac_json-GUI</jar.name>
     <dest.folder>/opt/digiverso/goobi/plugins/GUI/</dest.folder>
@@ -10,19 +10,35 @@
   <parent>
     <groupId>de.intranda.goobi.plugins.opac</groupId>
     <artifactId>goobi-plugin-opac-json</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
   </parent>
   <build>
-    <finalName>${jar.name}</finalName>
-    <resources>
-      <resource>
-        <directory>../src/main/resources/GUI</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <plugins>
+        <finalName>${jar.name}</finalName>
+        <sourceDirectory>${project.basedir}/../src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>../src/main/resources/GUI</directory>
+            </resource>
+            <resource>
+                <directory>../src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <includes>
+                    <include>**/goobi/interfaces/I*.class</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/de/intranda/goobi/**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>

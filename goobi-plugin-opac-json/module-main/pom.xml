@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.opac</groupId>
   <artifactId>goobi-plugin-opac-json-main</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <properties>
     <jar.name>plugin_intranda_opac_json</jar.name>
     <dest.folder>/opt/digiverso/goobi/plugins/opac/</dest.folder>
@@ -10,18 +10,27 @@
   <parent>
     <groupId>de.intranda.goobi.plugins.opac</groupId>
     <artifactId>goobi-plugin-opac-json</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
   </parent>
   <build>
     <finalName>${jar.name}</finalName>
-    <sourceDirectory>${project.basedir}/../src/main/java</sourceDirectory>
+    <sourceDirectory>${project.basedir}/../src/main/java</sourceDirectory> 
+     <resources>
+       <resource>
+         <directory>src/main/java</directory>
+         <excludes>
+            <exclude>**/org/goobi/interfaces/*</exclude>
+         </excludes>
+       </resource>
+       </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.7.0</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+                    <excludes>
+                        <exclude>**/org/goobi/interfaces/*</exclude>
+                    </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -72,6 +81,9 @@
         <artifactId>maven-jar-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
+        <excludes>
+         <exclude>**/org/goobi/interfaces/*</exclude>
+        </excludes>
           <archive>
             <manifestEntries>
               <Build-Time>${maven.build.timestamp}</Build-Time>

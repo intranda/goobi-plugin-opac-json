@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.SubnodeConfiguration;
+import org.goobi.interfaces.ISearchField;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,7 +28,7 @@ public class Config {
     private String sessionid;
     private String headerParameter;
 
-    private List<SearchField> fieldList = new ArrayList<>();
+    private List<ISearchField> fieldList = new ArrayList<>();
 
     private boolean showResultList = false;
     private String additionalApiUrl;
@@ -164,7 +165,7 @@ public class Config {
     }
 
     @Data
-    public class SearchField {
+    public class SearchField implements ISearchField {
 
         private String id;
 
