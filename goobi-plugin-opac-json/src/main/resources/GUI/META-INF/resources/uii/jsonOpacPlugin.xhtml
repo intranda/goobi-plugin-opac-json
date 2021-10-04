@@ -154,90 +154,90 @@ margin-right: 5px;
                                                     <h:outputText value="Title" />
                                                 </div>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{record.title}" />
+                                                    <h:outputText value="#{record['title']}" />
                                                 </div>
                                                 <div class="col-sm-3 ">
                                                     <h:outputText value="recordType" />
                                                 </div>
                                                 <div class="col-sm-9">
-                                                    <h:outputText value="#{record.recordType}" />
+                                                    <h:outputText value="#{record['recordType']}" />
                                                 </div>
-                                                <ui:fragment rendered="#{record.recordType == 'ils'}">
+                                                <ui:fragment rendered="#{record['recordType'] == 'ils'}">
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="bibId" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.bibId}" />
+                                                        <h:outputText value="#{record['bibId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="itemId" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.itemId}" />
+                                                        <h:outputText value="#{record['itemId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="holdingId" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.holdingId}" />
+                                                        <h:outputText value="#{record['holdingId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="author" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.author}" />
+                                                        <h:outputText value="#{record['author']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="callNumber" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.callNumber}" />
+                                                        <h:outputText value="#{record['callNumber']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="volume" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.volume}" />
+                                                        <h:outputText value="#{record['volume']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="pubDate" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.pubDate}" />
+                                                        <h:outputText value="#{record['pubDate']}" />
                                                     </div>
                                                 </ui:fragment>
 
-                                                <ui:fragment rendered="#{record.recordType != 'ils'}">
+                                                <ui:fragment rendered="#{record['recordType'] != 'ils'}">
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="series" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.series}" />
+                                                        <h:outputText value="#{record['series']}" />
                                                     </div>
 
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="topContainer" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.topContainer}" />
+                                                        <h:outputText value="#{record['topContainer']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="collection" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.collection}" />
+                                                        <h:outputText value="#{record['collection']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="containerGrouping" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.containerGrouping}" />
+                                                        <h:outputText value="#{record['containerGrouping']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
                                                         <h:outputText value="aspaceUri" />
                                                     </div>
                                                     <div class="col-sm-9">
-                                                        <h:outputText value="#{record.aspaceUri}" />
+                                                        <h:outputText value="#{record['aspaceUri']}" />
                                                     </div>
                                                 </ui:fragment>
                                             </div>
@@ -251,7 +251,7 @@ margin-right: 5px;
                                                 class="btn btn-icon-green"
                                                 jsf:action="#{ProzesskopieForm.OpacAuswerten}">
                                                 <f:setPropertyActionListener
-                                                    value="#{record.uri}"
+                                                    value="#{record['uri']}"
                                                     target="#{ProzesskopieForm.opacPlugin.selectedUrl}" />
                                                 <i class="fa fa-check" />
                                             </button>
