@@ -127,13 +127,14 @@ margin-right: 5px;
                         <div class="modal-header">
                             <h5
                                 class="modal-title"
-                                id="recordListLabel">#{msgs.bitteAuswaehlen}
+                                id="recordListLabel">#{msgs.plugin_opac_json_pleaseSelect}
 
                             <button
                                 type="button"
                                 class="close"
                                 data-dismiss="modal"
-                                aria-label="Close">
+                                title="#{msgs.plugin_opac_json_close}"
+                                aria-label="#{msgs.plugin_opac_json_close}">
                                 <h:outputText
                                     value="&amp;times;"
                                     escape="false" />
@@ -151,56 +152,56 @@ margin-right: 5px;
                                         <div class="col-sm-11">
                                             <div class="row form-group form-horizontal form-bordered">
                                                 <div class="col-sm-3 ">
-                                                    <h:outputText value="Title" />
+                                                    <h:outputText value="#{msgs.plugin_opac_json_title}" />
                                                 </div>
                                                 <div class="col-sm-9">
                                                     <h:outputText value="#{record['title']}" />
                                                 </div>
                                                 <div class="col-sm-3 ">
-                                                    <h:outputText value="recordType" />
+                                                    <h:outputText value="#{msgs.plugin_opac_json_recordType}" />
                                                 </div>
                                                 <div class="col-sm-9">
                                                     <h:outputText value="#{record['recordType']}" />
                                                 </div>
                                                 <ui:fragment rendered="#{record['recordType'] == 'ils'}">
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="bibId" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_bibId}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['bibId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="itemId" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_itemId}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['itemId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="holdingId" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_holdingId}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['holdingId']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="author" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_author}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['author']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="callNumber" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_callNumber}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['callNumber']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="volume" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_volume}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['volume']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="pubDate" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_pubDate}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['pubDate']}" />
@@ -209,32 +210,32 @@ margin-right: 5px;
 
                                                 <ui:fragment rendered="#{record['recordType'] != 'ils'}">
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="series" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_series}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['series']}" />
                                                     </div>
 
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="topContainer" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_topContainer}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['topContainer']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="collection" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_collection}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['collection']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="containerGrouping" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_containerGrouping}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['containerGrouping']}" />
                                                     </div>
                                                     <div class="col-sm-3 ">
-                                                        <h:outputText value="aspaceUri" />
+                                                        <h:outputText value="#{msgs.plugin_opac_json_aspaceUri}" />
                                                     </div>
                                                     <div class="col-sm-9">
                                                         <h:outputText value="#{record['aspaceUri']}" />
@@ -247,7 +248,8 @@ margin-right: 5px;
                                         <div class="col-sm-1">
                                             <button
                                                 jsf:id="check"
-                                                aria-label="#{msgs.selectFile}"
+                                                title="#{msgs.plugin_opac_json_selectRecord}"
+                                                aria-label="#{msgs.plugin_opac_json_selectRecord}"
                                                 class="btn btn-icon-green"
                                                 jsf:action="#{ProzesskopieForm.OpacAuswerten}">
                                                 <f:setPropertyActionListener
@@ -269,14 +271,14 @@ margin-right: 5px;
         </div>
 
         <script type="text/javascript">
-                                    $( document ).ready( function() {
-                                        
-                                        var showModal = "#{ProzesskopieForm.opacPlugin.showModal}";
-                                        if ( showModal == "true" ) {
-                                            $( '#recordList' ).modal( 'show' );
-                                        }
-                                    } );
-                                </script>
+            $( document ).ready( function() {
+                
+                var showModal = "#{ProzesskopieForm.opacPlugin.showModal}";
+                if ( showModal == "true" ) {
+                    $( '#recordList' ).modal( 'show' );
+                }
+            } );
+        </script>
 
     </composite:implementation>
 </ui:composition>
