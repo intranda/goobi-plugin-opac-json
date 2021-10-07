@@ -99,10 +99,10 @@ public class JsonOpacPlugin implements IJsonPlugin {
 
     @Getter
     @Setter
-    private String selectedUrl ;
+    private String selectedUrl;
 
     @Setter
-    private boolean testMode = false;
+    private boolean testMode = true;
 
     public Config getConfig(String templateName) {
 
@@ -154,11 +154,16 @@ public class JsonOpacPlugin implements IJsonPlugin {
         String response = null;
 
         if (testMode) { // create test string
-            response = getTestString();
-            prepareModal = true;
+            if (StringUtils.isNotBlank(selectedUrl)) {
+                response = "{\"jsonModelType\":\"BibSolrRecord\",\"source\":\"ils\",\"recordType\":\"bib\",\"uri\":\"/ils/item/4168081?bib=2716227\",\"callNumber\":\"Hf75 3 19-20\",\"callNumberWithPublicNote\":\"Hf75 3 19-20 Bound with other titles. To view other titles search by call number: Hf75 3 19-20.\",\"creator\":[\"Sauvage, T. (Thomas)\"],\"title\":[\"Un vaudevilliste : comédie en un acte, en prose\"],\"creationPlace\":[\"Paris? : (Paris\"],\"publisher\":[\"s.n., Imprimerie de Mme Ve Dondey-Dupré).\"],\"date\":[\"1839?]\"],\"extent\":[\"18, [2] p. (last 2 p. blank) : 25 cm.\"],\"material\":[\"ill. ;\"],\"language\":[\"French\"],\"languageCode\":[\"fre\"],\"description\":[\"Caption title.\",\"Printer's name from colophon.\",\"\\\"Représentée, pour la première fois, à Paris, sur le Théâtre de la Renaissance, le 6 juillet 1839.\\\" -- p. [1].\",\"At head of title, an illustration (drawing) from scene 22.\",\"Cast list on p. [1].\",\"Printed in double columns.\",\"SML,Y Hf75 3 20: In Bibl. dram., 3e sér., t. 20.\"],\"subjectTopic\":[\"French drama (Comedy)\",\"Authors, French\"],\"genre\":[\"Comedies\",\"One-act plays\"],\"orbisBibId\":\"2716227\",\"orbisBarcode\":\"39002001054627\",\"dateStructured\":[\"1839\"],\"illustrativeMatter\":\"    \",\"subjectEra\":\"19th century. 19th century.\",\"titleStatement\":[\"Un vaudevilliste : comédie en un acte, en prose / Par MM. T. Sauvage et Maurice Saint-Aguet\"],\"contributor\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"repository\":\"Sterling Memorial Library\",\"relatedTitleDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"creatorDisplay\":[\"Sauvage, T. (Thomas)\"],\"contributorDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"volumeEnumeration\":\"19-20\",\"dependentUris\":[\"/ils/holding/3055899\",\"/ils/item/4168081\",\"/ils/bib/2716227\",\"/ils/barcode/39002001054627\"],\"bibId\":2716227,\"suppressInOpac\":false,\"createDate\":\"2002-06-01T04:00:00.000+0000\",\"updateDate\":\"2011-03-10T18:55:15.000+0000\",\"holdingId\":3055899,\"itemId\":4168081,\"children\":[]}";
+                selectedUrl = null;
+            } else {
+                response = getTestString();
+                prepareModal = true;
+            }
         } else
 
-            if (StringUtils.isNotBlank(selectedUrl) && config.isShowResultList() ) {
+            if (StringUtils.isNotBlank(selectedUrl) && config.isShowResultList()) {
                 String url = config.getAdditionalApiUrl() + selectedUrl;
                 response = search(url);
                 selectedUrl = null;
@@ -172,7 +177,8 @@ public class JsonOpacPlugin implements IJsonPlugin {
             if (config.isShowResultList() && prepareModal) {
                 // prepare overview list
                 Gson gson = new Gson();
-                Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
+                Type typeOf = new TypeToken<List<Map<String, String>>>() {
+                }.getType();
                 overviewList = gson.fromJson(response, typeOf);
 
                 hitcount = 1;
@@ -229,6 +235,9 @@ public class JsonOpacPlugin implements IJsonPlugin {
                 } else {
                     digDoc.setLogicalDocStruct(logical);
                 }
+                Metadata imageFiles = new Metadata(inPrefs.getMetadataTypeByName("pathimagefiles"));
+                imageFiles.setValue("/images");
+                physical.addMetadata(imageFiles);
                 digDoc.setPhysicalDocStruct(physical);
 
                 // pathimagefiles
@@ -247,7 +256,6 @@ public class JsonOpacPlugin implements IJsonPlugin {
         }
         return fileformat;
     }
-
 
     private String prepareSearchUrl(String inSuchfeld, String inSuchbegriff) {
         String url = null;
@@ -734,7 +742,6 @@ public class JsonOpacPlugin implements IJsonPlugin {
         return answer;
     }
 
-
     private String getTestString() {
         return "[\n"
                 + "    {\"title\": \"Marcheￌﾁ de Saint-Pierre : meￌﾁlodrame en cinq actes / par Benjamin Antier et Alexis de Comberousse. \",\"recordType\": \"ils\",\"barcode\": \"39002001054627\",\"uri\": \"/ils/item/4168081?bib=1848655\",\"bibId\": \"1848655\",\"itemId\": \"4168081\",\"holdingId\": \"3055899\",\"author\": \"Antier, Benjamin, 1787-1870. \",\"callNumber\": \"Hf75 3 19-20\",\"volume\": \"19-20\",\"pubDate\": \"1839\"\n"
@@ -790,8 +797,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
                 + "    {\"title\": \"Naufrage de la Meￌﾁduse; drame en cinq actes ... \",\"recordType\": \"ils\",\"barcode\": \"39002001054627\",\"uri\": \"/ils/item/4168081?bib=2127636\",\"bibId\": \"2127636\",\"itemId\": \"4168081\",\"holdingId\": \"3055899\",\"author\": \"Desnoyer, Charles, 1806-1858. \",\"callNumber\": \"Hf75 3 19-20\",\"volume\": \"19-20\",\"pubDate\": \"1839\"\n"
                 + "    },\n"
                 + "    {\"title\": \"Vaudevilliste : comeￌﾁdie en un acte, en prose / Par MM. T. Sauvage et Maurice Saint-Aguet. \",\"recordType\": \"ils\",\"barcode\": \"39002001054627\",\"uri\": \"/ils/item/4168081?bib=2716227\",\"bibId\": \"2716227\",\"itemId\": \"4168081\",\"holdingId\": \"3055899\",\"author\": \"Sauvage, T. (Thomas) \",\"callNumber\": \"Hf75 3 19-20\",\"volume\": \"19-20\",\"pubDate\": \"1839\"\n"
-                + "    }\n"
-                + "]";
+                + "    }\n" + "]";
     }
 
 }

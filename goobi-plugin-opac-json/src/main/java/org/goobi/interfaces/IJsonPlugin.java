@@ -17,4 +17,6 @@ public interface IJsonPlugin extends IOpacPlugin {
     public List<ISearchField> getSearchFieldList();
 
     public void setTestMode(boolean testmode);
+
+    public void setSelectedUrl(String uri);
 }
