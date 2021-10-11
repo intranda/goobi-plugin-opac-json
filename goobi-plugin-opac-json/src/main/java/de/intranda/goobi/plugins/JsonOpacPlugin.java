@@ -102,7 +102,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
     private String selectedUrl;
 
     @Setter
-    private boolean testMode = true;
+    private boolean testMode = false;
 
     public Config getConfig(String templateName) {
 
