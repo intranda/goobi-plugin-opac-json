@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.opac</groupId>
   <artifactId>goobi-plugin-opac-json</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2-SNAPSHOT</version>
   <packaging>pom</packaging>
   <properties>
     <goobi.pluginversion>1.0.1</goobi.pluginversion>
@@ -14,6 +14,10 @@
   </properties>
   <url>http://maven.apache.org</url>
   	<repositories>
+	    <repository>
+	      <id>intranda-public</id>
+	      <url>https://nexus.intranda.com/repository/maven-public</url>
+	    </repository>	  	
 		<repository>
 			<id>intranda-internal</id>
 			<url>https://nexus.intranda.com/repository/maven-internal</url>
