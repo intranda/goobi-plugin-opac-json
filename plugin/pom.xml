@@ -10,29 +10,29 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <goobi.version>22.08</goobi.version>
+    <goobi.version>22.08.1</goobi.version>
   </properties>
   <url>http://maven.apache.org</url>
-  	<repositories>
-	    <repository>
-	      <id>intranda-public</id>
-	      <url>https://nexus.intranda.com/repository/maven-public</url>
-	    </repository>	  	
-		<repository>
-			<id>intranda-internal</id>
-			<url>https://nexus.intranda.com/repository/maven-internal</url>
-		</repository>
-	</repositories>
-	<distributionManagement>
-		<repository>
-			<id>intranda-internal-releases</id>
-			<url>https://nexus.intranda.com/repository/maven-internal-releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>intranda-internal-snapshots</id>
-			<url>https://nexus.intranda.com/repository/maven-internal-snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+  <repositories>
+    <repository>
+      <id>intranda-public</id>
+      <url>https://nexus.intranda.com/repository/maven-public</url>
+    </repository>
+    <repository>
+      <id>intranda-internal</id>
+      <url>https://nexus.intranda.com/repository/maven-internal</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>intranda-internal-releases</id>
+      <url>https://nexus.intranda.com/repository/maven-internal-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>intranda-internal-snapshots</id>
+      <url>https://nexus.intranda.com/repository/maven-internal-snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
   <modules>
     <module>module-gui</module>
     <module>module-main</module>
