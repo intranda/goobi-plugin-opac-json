@@ -29,6 +29,7 @@ import org.apache.oro.text.perl.Perl5Util;
 import org.goobi.interfaces.IJsonPlugin;
 import org.goobi.interfaces.ISearchField;
 import org.goobi.production.enums.PluginType;
+import org.json.JSONArray;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -41,15 +42,14 @@ import de.intranda.goobi.plugins.util.Config.DocumentType;
 import de.intranda.goobi.plugins.util.Config.MetadataField;
 import de.intranda.goobi.plugins.util.Config.PersonField;
 import de.sub.goobi.config.ConfigPlugins;
-import de.sub.goobi.helper.HttpClientHelper;
 import de.sub.goobi.helper.UghHelper;
 import de.unigoettingen.sub.search.opac.ConfigOpac;
 import de.unigoettingen.sub.search.opac.ConfigOpacCatalogue;
 import de.unigoettingen.sub.search.opac.ConfigOpacDoctype;
+import io.goobi.workflow.api.connection.HttpUtils;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import net.minidev.json.JSONArray;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 import ugh.dl.DigitalDocument;
 import ugh.dl.DocStruct;
@@ -155,7 +155,8 @@ public class JsonOpacPlugin implements IJsonPlugin {
 
         if (testMode) { // create test string
             if (StringUtils.isNotBlank(selectedUrl)) {
-                response = "{\"jsonModelType\":\"BibSolrRecord\",\"source\":\"ils\",\"recordType\":\"bib\",\"uri\":\"/ils/item/4168081?bib=2716227\",\"callNumber\":\"Hf75 3 19-20\",\"callNumberWithPublicNote\":\"Hf75 3 19-20 Bound with other titles. To view other titles search by call number: Hf75 3 19-20.\",\"creator\":[\"Sauvage, T. (Thomas)\"],\"title\":[\"Un vaudevilliste : comédie en un acte, en prose\"],\"creationPlace\":[\"Paris? : (Paris\"],\"publisher\":[\"s.n., Imprimerie de Mme Ve Dondey-Dupré).\"],\"date\":[\"1839?]\"],\"extent\":[\"18, [2] p. (last 2 p. blank) : 25 cm.\"],\"material\":[\"ill. ;\"],\"language\":[\"French\"],\"languageCode\":[\"fre\"],\"description\":[\"Caption title.\",\"Printer's name from colophon.\",\"\\\"Représentée, pour la première fois, à Paris, sur le Théâtre de la Renaissance, le 6 juillet 1839.\\\" -- p. [1].\",\"At head of title, an illustration (drawing) from scene 22.\",\"Cast list on p. [1].\",\"Printed in double columns.\",\"SML,Y Hf75 3 20: In Bibl. dram., 3e sér., t. 20.\"],\"subjectTopic\":[\"French drama (Comedy)\",\"Authors, French\"],\"genre\":[\"Comedies\",\"One-act plays\"],\"orbisBibId\":\"2716227\",\"orbisBarcode\":\"39002001054627\",\"dateStructured\":[\"1839\"],\"illustrativeMatter\":\"    \",\"subjectEra\":\"19th century. 19th century.\",\"titleStatement\":[\"Un vaudevilliste : comédie en un acte, en prose / Par MM. T. Sauvage et Maurice Saint-Aguet\"],\"contributor\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"repository\":\"Sterling Memorial Library\",\"relatedTitleDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"creatorDisplay\":[\"Sauvage, T. (Thomas)\"],\"contributorDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"volumeEnumeration\":\"19-20\",\"dependentUris\":[\"/ils/holding/3055899\",\"/ils/item/4168081\",\"/ils/bib/2716227\",\"/ils/barcode/39002001054627\"],\"bibId\":2716227,\"suppressInOpac\":false,\"createDate\":\"2002-06-01T04:00:00.000+0000\",\"updateDate\":\"2011-03-10T18:55:15.000+0000\",\"holdingId\":3055899,\"itemId\":4168081,\"children\":[]}";
+                response =
+                        "{\"jsonModelType\":\"BibSolrRecord\",\"source\":\"ils\",\"recordType\":\"bib\",\"uri\":\"/ils/item/4168081?bib=2716227\",\"callNumber\":\"Hf75 3 19-20\",\"callNumberWithPublicNote\":\"Hf75 3 19-20 Bound with other titles. To view other titles search by call number: Hf75 3 19-20.\",\"creator\":[\"Sauvage, T. (Thomas)\"],\"title\":[\"Un vaudevilliste : comédie en un acte, en prose\"],\"creationPlace\":[\"Paris? : (Paris\"],\"publisher\":[\"s.n., Imprimerie de Mme Ve Dondey-Dupré).\"],\"date\":[\"1839?]\"],\"extent\":[\"18, [2] p. (last 2 p. blank) : 25 cm.\"],\"material\":[\"ill. ;\"],\"language\":[\"French\"],\"languageCode\":[\"fre\"],\"description\":[\"Caption title.\",\"Printer's name from colophon.\",\"\\\"Représentée, pour la première fois, à Paris, sur le Théâtre de la Renaissance, le 6 juillet 1839.\\\" -- p. [1].\",\"At head of title, an illustration (drawing) from scene 22.\",\"Cast list on p. [1].\",\"Printed in double columns.\",\"SML,Y Hf75 3 20: In Bibl. dram., 3e sér., t. 20.\"],\"subjectTopic\":[\"French drama (Comedy)\",\"Authors, French\"],\"genre\":[\"Comedies\",\"One-act plays\"],\"orbisBibId\":\"2716227\",\"orbisBarcode\":\"39002001054627\",\"dateStructured\":[\"1839\"],\"illustrativeMatter\":\"    \",\"subjectEra\":\"19th century. 19th century.\",\"titleStatement\":[\"Un vaudevilliste : comédie en un acte, en prose / Par MM. T. Sauvage et Maurice Saint-Aguet\"],\"contributor\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"repository\":\"Sterling Memorial Library\",\"relatedTitleDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"creatorDisplay\":[\"Sauvage, T. (Thomas)\"],\"contributorDisplay\":[\"Dondey-Dupré Mme Ve.\",\"Théâtre de la Renaissance (Paris, France).\"],\"volumeEnumeration\":\"19-20\",\"dependentUris\":[\"/ils/holding/3055899\",\"/ils/item/4168081\",\"/ils/bib/2716227\",\"/ils/barcode/39002001054627\"],\"bibId\":2716227,\"suppressInOpac\":false,\"createDate\":\"2002-06-01T04:00:00.000+0000\",\"updateDate\":\"2011-03-10T18:55:15.000+0000\",\"holdingId\":3055899,\"itemId\":4168081,\"children\":[]}";
                 selectedUrl = null;
             } else {
                 response = getTestString();
@@ -163,15 +164,15 @@ public class JsonOpacPlugin implements IJsonPlugin {
             }
         } else
 
-            if (StringUtils.isNotBlank(selectedUrl) && config.isShowResultList()) {
-                String url = config.getAdditionalApiUrl() + selectedUrl;
-                response = search(url);
-                selectedUrl = null;
-            } else {
-                String url = prepareSearchUrl(inSuchfeld, inSuchbegriff);
-                response = search(url);
-                prepareModal = true;
-            }
+        if (StringUtils.isNotBlank(selectedUrl) && config.isShowResultList()) {
+            String url = config.getAdditionalApiUrl() + selectedUrl;
+            response = search(url);
+            selectedUrl = null;
+        } else {
+            String url = prepareSearchUrl(inSuchfeld, inSuchbegriff);
+            response = search(url);
+            prepareModal = true;
+        }
         if (StringUtils.isNotBlank(response)) {
             hitcount = 1;
             if (config.isShowResultList() && prepareModal) {
@@ -353,16 +354,14 @@ public class JsonOpacPlugin implements IJsonPlugin {
                             addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                         }
                     }
-                } else {
-                    if (object != null) {
-                        String stringValue = getValueAsString(object);
-                        String normdata = null;
-                        if (pf.getIdentifier() != null) {
-                            normdata = getValueAsString(JsonPath.read(document,
-                                    pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
-                        }
-                        addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
+                } else if (object != null) {
+                    String stringValue = getValueAsString(object);
+                    String normdata = null;
+                    if (pf.getIdentifier() != null) {
+                        normdata = getValueAsString(JsonPath.read(document,
+                                pf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                     }
+                    addPerson(stringValue, normdata, pf, anchor, logical, inPrefs);
                 }
             } catch (PathNotFoundException e) {
                 log.info("Path is invalid or field could not be found ", e);
@@ -388,16 +387,14 @@ public class JsonOpacPlugin implements IJsonPlugin {
                                 addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                             }
                         }
-                    } else {
-                        if (object != null) {
-                            String stringValue = getValueAsString(object);
-                            String normdata = null;
-                            if (mf.getIdentifier() != null) {
-                                normdata = getValueAsString(JsonPath.read(document,
-                                        mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
-                            }
-                            addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
+                    } else if (object != null) {
+                        String stringValue = getValueAsString(object);
+                        String normdata = null;
+                        if (mf.getIdentifier() != null) {
+                            normdata = getValueAsString(JsonPath.read(document,
+                                    mf.getIdentifier().replace("THIS", stringValue.replace("\'", "\\\'").replace("\"", "\\\""))));
                         }
+                        addMetadata(stringValue, normdata, mf, anchor, logical, prefs);
                     }
                 }
             } catch (PathNotFoundException e) {
@@ -449,7 +446,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
                     if (identifier != null) {
                         person.setAuthorityValue(identifier);
                     }
-                    if (anchor != null && pf.getDocType().equals("anchor")) {
+                    if (anchor != null && "anchor".equals(pf.getDocType())) {
                         anchor.addPerson(person);
                     } else {
                         logical.addPerson(person);
@@ -503,7 +500,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
                         metadata.setAuthorityValue(identifier);
                     }
 
-                    if (anchor != null && mf.getDocType().equals("anchor")) {
+                    if (anchor != null && "anchor".equals(mf.getDocType())) {
                         anchor.addMetadata(metadata);
                     } else {
                         logical.addMetadata(metadata);
@@ -620,7 +617,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
         HttpPost method = new HttpPost(url);
         if (parameter != null && parameter.length > 4) {
             CredentialsProvider credsProvider = new BasicCredentialsProvider();
-            credsProvider.setCredentials(new AuthScope(parameter[3], Integer.valueOf(parameter[4]).intValue()),
+            credsProvider.setCredentials(new AuthScope(parameter[3], Integer.parseInt(parameter[4])),
                     new UsernamePasswordCredentials(parameter[1], parameter[2]));
             client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
         } else {
@@ -632,7 +629,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
                 params.add(new BasicNameValuePair("password", password));
                 method.setEntity(new UrlEncodedFormEntity(params));
             }
-            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+            response = client.execute(method, HttpUtils.stringResponseHandler);
         } catch (IOException e) {
             log.error("Cannot execute URL " + url, e);
         } finally {
@@ -669,7 +666,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
         }
 
         try {
-            response = client.execute(method, HttpClientHelper.stringResponseHandler);
+            response = client.execute(method, HttpUtils.stringResponseHandler);
         } catch (IOException e) {
             log.error("Cannot execute URL " + url, e);
         } finally {
