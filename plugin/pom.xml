@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.intranda.goobi.plugins.opac</groupId>
   <artifactId>goobi-plugin-opac-json</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>23.04.1</version>
   <packaging>pom</packaging>
   <properties>
     <goobi.pluginversion>1.0.1</goobi.pluginversion>
@@ -10,7 +10,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <goobi.version>23.03.2</goobi.version>
+    <goobi.version>23.04.1</goobi.version>
   </properties>
   <url>http://maven.apache.org</url>
   <repositories>
