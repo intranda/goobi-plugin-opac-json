@@ -18,19 +18,15 @@
       <id>intranda-public</id>
       <url>https://nexus.intranda.com/repository/maven-public</url>
     </repository>
-    <repository>
-      <id>intranda-internal</id>
-      <url>https://nexus.intranda.com/repository/maven-internal</url>
-    </repository>
   </repositories>
   <distributionManagement>
     <repository>
-      <id>intranda-internal-releases</id>
-      <url>https://nexus.intranda.com/repository/maven-internal-releases</url>
+      <id>intranda-releases</id>
+      <url>https://nexus.intranda.com/repository/maven-releases</url>
     </repository>
     <snapshotRepository>
-      <id>intranda-internal-snapshots</id>
-      <url>https://nexus.intranda.com/repository/maven-internal-snapshots</url>
+      <id>intranda-snapshots</id>
+      <url>https://nexus.intranda.com/repository/maven-snapshots</url>
     </snapshotRepository>
   </distributionManagement>
   <modules>
