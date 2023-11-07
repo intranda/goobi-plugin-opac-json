@@ -8,6 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -25,7 +27,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.oro.text.perl.Perl5Util;
 import org.goobi.interfaces.IJsonPlugin;
 import org.goobi.interfaces.ISearchField;
 import org.goobi.production.enums.PluginType;
@@ -61,12 +62,13 @@ import ugh.exceptions.DocStructHasNoTypeException;
 import ugh.exceptions.IncompletePersonObjectException;
 import ugh.exceptions.MetadataTypeNotAllowedException;
 import ugh.fileformats.mets.MetsMods;
+import ugh.fileformats.mets.MetsModsImportExport;
 
 @PluginImplementation
 @Log4j2
 public class JsonOpacPlugin implements IJsonPlugin {
 
-    private Perl5Util perlUtil = new Perl5Util();
+    private static final long serialVersionUID = -6765019017558011325L;
 
     @Getter
     private String title = "intranda_opac_json";
@@ -74,7 +76,7 @@ public class JsonOpacPlugin implements IJsonPlugin {
     @Getter
     private PluginType type = PluginType.Opac;
 
-    private Config config = null;
+    private transient Config config = null;
 
     private int hitcount;
     protected String gattung = "Aa";
@@ -406,13 +408,16 @@ public class JsonOpacPlugin implements IJsonPlugin {
     private void addPerson(String stringValue, String identifier, PersonField pf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
             if (StringUtils.isNotBlank(pf.getValidateRegularExpression())) {
-                if (!perlUtil.match(pf.getValidateRegularExpression(), stringValue)) {
+                Pattern pattern = Pattern.compile(pf.getValidateRegularExpression());
+                Matcher matcher = pattern.matcher(stringValue);
+                if (!matcher.find()) {
                     return;
                 }
             }
 
             if (StringUtils.isNotBlank(pf.getManipulateRegularExpression())) {
-                stringValue = perlUtil.substitute(pf.getManipulateRegularExpression(), stringValue);
+                List<String> parts = MetsModsImportExport.splitRegularExpression(pf.getManipulateRegularExpression());
+                stringValue = stringValue.replaceAll(parts.get(0), parts.get(1));
             }
             if (pf.isFollowLink() && StringUtils.isNotBlank(pf.getTemplateName())) {
                 Config templateConfig = getConfig(pf.getTemplateName());
@@ -437,8 +442,10 @@ public class JsonOpacPlugin implements IJsonPlugin {
                 }
 
             } else {
-                String firstname = perlUtil.substitute(pf.getFirstname(), stringValue);
-                String lastname = perlUtil.substitute(pf.getLastname(), stringValue);
+                List<String> parts = MetsModsImportExport.splitRegularExpression(pf.getManipulateRegularExpression());
+                String firstname = pf.getFirstname().replaceAll(parts.get(0), parts.get(1));
+                String lastname = pf.getLastname().replaceAll(parts.get(0), parts.get(1));
+
                 try {
                     Person person = new Person(prefs.getMetadataTypeByName(pf.getMetadata()));
                     person.setFirstname(firstname);
@@ -462,13 +469,16 @@ public class JsonOpacPlugin implements IJsonPlugin {
     private void addMetadata(String stringValue, String identifier, MetadataField mf, DocStruct anchor, DocStruct logical, Prefs prefs) {
         if (StringUtils.isNotBlank(stringValue)) {
             if (StringUtils.isNotBlank(mf.getValidateRegularExpression())) {
-                if (!perlUtil.match(mf.getValidateRegularExpression(), stringValue)) {
+                Pattern pattern = Pattern.compile(mf.getValidateRegularExpression());
+                Matcher matcher = pattern.matcher(stringValue);
+                if (!matcher.find()) {
                     return;
                 }
             }
 
             if (StringUtils.isNotBlank(mf.getManipulateRegularExpression())) {
-                stringValue = perlUtil.substitute(mf.getManipulateRegularExpression(), stringValue);
+                List<String> parts = MetsModsImportExport.splitRegularExpression(mf.getManipulateRegularExpression());
+                stringValue = stringValue.replaceAll(parts.get(0), parts.get(1));
             }
             if (mf.isFollowLink() && StringUtils.isNotBlank(mf.getTemplateName())) {
                 Config templateConfig = getConfig(mf.getTemplateName());
