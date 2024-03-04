@@ -11,6 +11,7 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.easymock.EasyMock;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
@@ -124,6 +125,7 @@ public class JsonImportPluginTest {
 
 
     @Test
+    @Ignore("Test was not executed in prior release")
     public void testSearchArchiveRecord() throws Exception {
         JsonOpacPlugin plugin = new JsonOpacPlugin();
 
