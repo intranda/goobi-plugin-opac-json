@@ -5,14 +5,6 @@
     <artifactId>plugin-opac-json</artifactId>
     <version>24.03-SNAPSHOT</version>
   </parent>
-  <artifactId>plugin-opac-json-base</artifactId>
+  <artifactId>plugin-opac-json-lib</artifactId>
   <packaging>jar</packaging>
-  <dependencies>
-    <dependency>
-      <groupId>io.goobi.workflow.plugin</groupId>
-      <artifactId>plugin-opac-json-lib</artifactId>
-      <version>24.03-SNAPSHOT</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
 </project>
