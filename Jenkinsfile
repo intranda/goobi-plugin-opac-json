@@ -43,6 +43,21 @@ pipeline {
       }
     }
 
+    stage('deploy-libs') {
+      when {
+        anyOf {
+          branch 'master'
+          branch 'develop' /* for testing purposes only */
+        }
+      }
+      steps {
+        script {
+          if (fileExists('module-lib/pom.xml')) {
+            mvn -f module-lib/pom.xml deploy
+          }
+        }
+      }
+    }
   }
 
   post {
