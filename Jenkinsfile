@@ -51,10 +51,8 @@ pipeline {
         }
       }
       steps {
-        script {
-          if (fileExists('module-lib/pom.xml')) {
-            mvn -f module-lib/pom.xml deploy
-          }
+        if (fileExists('module-lib/pom.xml')) {
+          mvn -f module-lib/pom.xml deploy
         }
       }
     }
