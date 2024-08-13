@@ -1,11 +1,14 @@
 <?xml version="1.0"?>
-
-<project name="goobi-plugin-opac-json" default="devbuild">
+<project default="devbuild">
+    
+    <property name="name" value="json" />
 	<target name="devbuild">
-		<exec executable="mvn">
-			<arg value="package" />
-		</exec>
-		<copy file="module-main/target/plugin_intranda_opac_json.jar" todir="/opt/digiverso/goobi/plugins/opac/"/>
-		<copy file="module-gui/target/plugin_intranda_opac_json-GUI.jar" todir="/opt/digiverso/goobi/plugins/GUI/"/>
-	</target>
+	    <exec executable="mvn">
+	        <arg value="package"/>
+	    </exec>
+	    <copy file="module-base/target/plugin-opac-${name}-base.jar" todir="/opt/digiverso/goobi/plugins/opac/" overwrite="true"/>
+	    <copy file="module-gui/target/plugin-opac-${name}-gui.jar" todir="/opt/digiverso/goobi/plugins/GUI/" overwrite="true"/>
+	    <copy file="module-lib/target/plugin-opac-${name}-lib.jar" todir="/opt/digiverso/goobi/plugins/GUI/" overwrite="true"/>        
+    </target>
+
 </project>
