@@ -2,6 +2,7 @@ package de.intranda.goobi.plugins;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -626,6 +629,9 @@ public class JsonOpacPlugin implements IJsonPlugin {
         String url = parameter[0];
         HttpPost method = new HttpPost(url);
         if (parameter != null && parameter.length > 4) {
+            String auth = parameter[1] + ":" + parameter[2];
+            method.addHeader("Authorization", "BASIC " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8)));
+
             CredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(new AuthScope(parameter[3], Integer.parseInt(parameter[4])),
                     new UsernamePasswordCredentials(parameter[1], parameter[2]));
@@ -662,6 +668,9 @@ public class JsonOpacPlugin implements IJsonPlugin {
         HttpGet method = new HttpGet(url);
 
         if (username != null && password != null) {
+            String auth = username + ":" + password;
+            method.addHeader("Authorization", "BASIC " + DatatypeConverter.printBase64Binary(auth.getBytes(StandardCharsets.UTF_8)));
+
             CredentialsProvider credsProvider = new BasicCredentialsProvider();
             credsProvider.setCredentials(new AuthScope(null, -1), new UsernamePasswordCredentials(username, password));
             client = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
