@@ -15,8 +15,8 @@ Detail                      | Description
 **Plugin identifier**       | intranda_opac_json
 **Plugin type**             | opac
 **Licence**                 | GPL 2.0 or newer
-**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/eng/opac/goobi-plugin-opac-json
-**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/ger/opac/goobi-plugin-opac-json
+**Documentation (German)**  | https://docs.goobi.io/workflow-plugins/v/ger/opac/goobi-plugin-opac-json
+**Documentation (English)** | https://docs.goobi.io/workflow-plugins/v/eng/opac/goobi-plugin-opac-json
 
 ## Goobi details
 
