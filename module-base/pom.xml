@@ -4,7 +4,7 @@
   <parent>
     <groupId>io.goobi.workflow.plugin</groupId>
     <artifactId>plugin-opac-json</artifactId>
-    <version>25.06-SNAPSHOT</version>
+    <version>25.06</version>
   </parent>
   <artifactId>plugin-opac-json-base</artifactId>
   <packaging>jar</packaging>
@@ -12,7 +12,7 @@
     <dependency>
       <groupId>io.goobi.workflow.plugin</groupId>
       <artifactId>plugin-opac-json-lib</artifactId>
-      <version>25.06-SNAPSHOT</version>
+      <version>25.06</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
