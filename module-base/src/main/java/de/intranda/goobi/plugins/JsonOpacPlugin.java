@@ -444,9 +444,11 @@ public class JsonOpacPlugin implements IJsonPlugin {
                 }
 
             } else {
-                List<String> parts = MetsModsImportExport.splitRegularExpression(pf.getManipulateRegularExpression());
-                String firstname = pf.getFirstname().replaceAll(parts.get(0), parts.get(1));
-                String lastname = pf.getLastname().replaceAll(parts.get(0), parts.get(1));
+
+                List<String> parts = MetsModsImportExport.splitRegularExpression(pf.getFirstname());
+                String firstname = stringValue.replaceAll(parts.get(0), parts.get(1));
+                parts = MetsModsImportExport.splitRegularExpression(pf.getLastname());
+                String lastname = stringValue.replaceAll(parts.get(0), parts.get(1));
 
                 try {
                     Person person = new Person(prefs.getMetadataTypeByName(pf.getMetadata()));
