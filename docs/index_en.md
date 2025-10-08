@@ -3,6 +3,10 @@ title: Generic JSON Import
 identifier: intranda_opac_json
 published: true
 description: OPAC Plugin for the data transfer of JSON data records
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Opac Plugin
 ---
 ## Introduction
 This documentation describes the installation, configuration and use of the plugin. You can use this plugin to retrieve data from an external system and transfer it to Goobi. The catalog must have an API that allows records to be delivered as JSON.
