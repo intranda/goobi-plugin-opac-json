@@ -5,7 +5,8 @@
     xmlns:h="http://xmlns.jcp.org/jsf/html"
     xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-    xmlns:jsf="http://xmlns.jcp.org/jsf">
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:util="http://goobi.io/util">
 
     <composite:interface>
     </composite:interface>
@@ -254,7 +255,7 @@ margin-right: 5px;
                                                 <f:setPropertyActionListener
                                                     value="#{record['uri']}"
                                                     target="#{ProzesskopieForm.opacPlugin.selectedUrl}" />
-                                                <i class="fa fa-check" />
+                                                <util:icon icon="x" />
                                             </button>
                                         </div>
                                     </div>
