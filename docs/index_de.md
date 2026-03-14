@@ -192,7 +192,7 @@ Innerhalb des Katalogs können verschiedene Feldtypen genutzt werden:
 
 
 ### Feldtyp: field
-Das Element `<field>` wird über das Attribut `id` identifiziert. Innerhalb der Einträge kann im Element `<type>` definiert werden, welche Felder in der Eingabemaske zur Verfügung stehen. Dabei gibt es die verschiedenen Typen `text`, `select` und `select+text`. Der Type `text` erzeugt ein einfaches Eingabefeld, `select` eine Auswahlliste und `select+text` beides. Das Element `<label>` enthält den Namen, unter dem das Feld in der Oberfläche angezeigt wird und die Einträge in `<select>` defininieren, welche Inhalte in der Auswahlliste enthalten sind. Optional lässt sich eine Vorbelegung angeben. Dies geschieht mit dem Element `<defaultText>`.
+Das Element `<field>` wird über das Attribut `id` identifiziert. Innerhalb der Einträge kann im Element `<type>` definiert werden, welche Felder in der Eingabemaske zur Verfügung stehen. Dabei gibt es die verschiedenen Typen `text`, `select` und `select+text`. Der Type `text` erzeugt ein einfaches Eingabefeld, `select` eine Auswahlliste und `select+text` beides. Das Element `<label>` enthält den Namen, unter dem das Feld in der Oberfläche angezeigt wird und die Einträge in `<select>` definieren, welche Inhalte in der Auswahlliste enthalten sind. Optional lässt sich eine Vorbelegung angeben. Dies geschieht mit dem Element `<defaultText>`.
 
 Das Element ist wiederholbar, so dass die Eingabemaske auch mehrere Eingabefelder enthalten kann.
 
