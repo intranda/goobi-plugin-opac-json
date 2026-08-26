@@ -44,16 +44,6 @@ width: 100%;
     opacity: 0.5;
 }
 
-.btn-icon-green {
-    color: #fff;
-    background-color: #40bf40;
-    min-width: 25px;
-    height: 25px;
-    line-height: 25px;
-    padding: 0;
-    margin-left: 50%;
-}
-
 .entry {
 margin-left: 0;
 border: 1px solid #eee;
@@ -235,7 +225,7 @@ margin-right: 5px;
                                             jsf:id="check"
                                             title="#{msgs.plugin_opac_json_selectRecord}"
                                             aria-label="#{msgs.plugin_opac_json_selectRecord}"
-                                            class="btn btn-icon-green"
+                                            class="btn btn-success"
                                             jsf:action="#{ProzesskopieForm.opacAuswerten}">
                                             <f:setPropertyActionListener
                                                 value="#{record['uri']}"
